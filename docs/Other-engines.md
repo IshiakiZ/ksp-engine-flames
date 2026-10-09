@@ -4,11 +4,11 @@
 
 | Flame | Looks | Drawn for |
 | --- | --- | --- |
-| `kerosene` | yellow-white at the heart, orange and sooty outside; dark for a little way out of the nozzle | Reliant, Swivel, Mainsail, Twin-Boar, Mastodon, Kodiak, Cub |
-| `hydrogen` | pale blue, nearly clear, its diamonds sharp | Vector, Mammoth, Rhino, Skipper, Skiff, Dart, the R.A.P.I.E.R. as a rocket |
-| `storable` | thin and clean, blue-white to violet | Terrier, Poodle, Spark, Ant, Spider, Twitch, Thud, Wolfhound, Cheetah, Bobcat |
-| `methane` | blue to violet, pink where hottest | engines that take `LqdMethane` |
-| `solid` | brilliant, thick, wide and long, torn | every engine that burns `SolidFuel` |
+| `kerosene` | white at the nozzle, yellow, orange where it is spent | Reliant, Swivel, Mainsail, Twin-Boar, Mastodon, Kodiak, Cub |
+| `hydrogen` | pale blue, and nearly without light | Vector, Mammoth, Rhino, Skipper, Skiff, Dart, the R.A.P.I.E.R. as a rocket |
+| `storable` | thin and clean, blue-white | Terrier, Poodle, Spark, Ant, Spider, Twitch, Thud, Wolfhound, Cheetah, Bobcat |
+| `methane` | blue to violet | engines that take `LqdMethane` |
+| `solid` | brilliant, whiter than kerosene, and wider | every engine that burns `SolidFuel` |
 | `mono` | all but without light | engines that burn `MonoPropellant` alone |
 | `reactor` | a faint red | engines that take `LiquidFuel` alone (the Nerv), or liquid hydrogen without oxygen |
 

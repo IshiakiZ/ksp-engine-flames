@@ -20,6 +20,19 @@ for candidate in ../ksp-keystone/GameData/Keystone/Keystone.dll "$KSP_DIR/GameDa
   [ -z "$KEYSTONE" ] && [ -f "$candidate" ] && KEYSTONE="$candidate"
 done
 [ -n "$KEYSTONE" ] && [ -f "$KEYSTONE" ] || { echo "error: Keystone.dll not found: install Keystone into the game, build ../ksp-keystone, or set KEYSTONE=/path/to/Keystone.dll" >&2; exit 1; }
+# What else it is built against, if anything (src/EngineFlames/needs.txt: other mods' libraries, by their place in GameData):
+# a built copy of that mod's repository beside this one, or the copy installed in the game.
+if [ -f src/EngineFlames/needs.txt ]; then
+  while IFS= read -r path; do
+    [ -n "$path" ] || continue
+    found=""
+    for candidate in ../*/GameData/"$path" "$KSP_DIR/GameData/$path"; do
+      [ -z "$found" ] && [ -f "$candidate" ] && found="$candidate"
+    done
+    [ -n "$found" ] || { echo "error: $path not found: install that mod into the game, or build its repository beside this one" >&2; exit 1; }
+    KEYSTONE="$KEYSTONE:$found"
+  done < src/EngineFlames/needs.txt
+fi
 
 case "$MODE" in
   check)
