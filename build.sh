@@ -44,10 +44,12 @@ case "$MODE" in
     WITH="$KEYSTONE" compile "$OUT/EngineFlames.dll" "" src/EngineFlames
     # (the mod's own shaders, if it has any: made by tools/shaderpack/make_bundle.py and kept ready made in src/EngineFlames/Shaders)
     if ls src/EngineFlames/Shaders/*.bundle >/dev/null 2>&1; then mkdir -p "$OUT/PluginData"; cp src/EngineFlames/Shaders/*.bundle "$OUT/PluginData/"; fi
+    # (and anything else it keeps in src/EngineFlames/PluginData: a craft file, say)
+    if [ -d src/EngineFlames/PluginData ]; then mkdir -p "$OUT/PluginData"; cp -R src/EngineFlames/PluginData/. "$OUT/PluginData/"; fi
     if [ "$MODE" = dist ]; then echo "ok: built into $OUT"; exit 0; fi
     mkdir -p "$KSP_DIR/GameData/EngineFlames"
     cp "$OUT/EngineFlames.dll" "$KSP_DIR/GameData/EngineFlames/"
-    if [ -d "$OUT/PluginData" ]; then mkdir -p "$KSP_DIR/GameData/EngineFlames/PluginData"; cp "$OUT/PluginData"/*.bundle "$KSP_DIR/GameData/EngineFlames/PluginData/"; fi
+    if [ -d "$OUT/PluginData" ]; then mkdir -p "$KSP_DIR/GameData/EngineFlames/PluginData"; cp -R "$OUT/PluginData/." "$KSP_DIR/GameData/EngineFlames/PluginData/"; fi
     echo "ok: Engine Flames installed to $KSP_DIR/GameData/EngineFlames (restart KSP to load it; it needs Keystone there too)"
     ;;
   *)

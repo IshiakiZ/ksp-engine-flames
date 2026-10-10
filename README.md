@@ -8,7 +8,8 @@ fire, in whose air it burns.
 ![Six flames: lift-off by day and by night, kerosene, hydrogen, thin air, a vacuum](src/EngineFlames/img/engine-flames.jpg)
 
 For Kerbal Space Program 1.12.x. Needs [Volumetric Explosions](https://github.com/IshiakiZ/ksp-volumetric-explosions) 0.4.0 or
-later and [Keystone](https://github.com/IshiakiZ/ksp-keystone); both come in the download. It works beside the Waterfall mod
+later (0.5.0 for the look described below as fire, tongues and diamonds) and [Keystone](https://github.com/IshiakiZ/ksp-keystone);
+both come in the download. It works beside the Waterfall mod
 or without it: while one of its flames burns for an engine, the flame the game or Waterfall draws for that
 engine is hidden, and the smoke is left.
 
@@ -21,6 +22,10 @@ game's flames as they are.
 * **Worked out, not drawn.** A flame is some hundreds of bits of gas for each nozzle, each moved, widened,
   stirred and cooled frame by frame, and all of them drawn as one lit volume. Its edge, its flicker and
   its reach are what the gas did: nothing of its shape is laid down beforehand.
+* **Fire, not a glow** (with Volumetric Explosions 0.5.0). Its pattern holds its place on the nozzle and flows
+  down the jet: tongues torn at its edge, streaks along it, a white-hot core in a yellow and orange sheath,
+  soot in a kerosene flame, a few shock diamonds in a hydrogen one. (Before, it was "kind of just like
+  blurred color", in the words of the first person to see it.)
 * **The air shapes it.** A narrow torn column at the pad; wider and paler as the air thins; a smooth pale
   bell in a vacuum. It changes all the way up, not in steps.
 * **It strikes the ground.** The flame of a rocket on its pad is turned by the pad and runs out over it

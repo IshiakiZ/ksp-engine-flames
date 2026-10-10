@@ -26,6 +26,28 @@ way it lies on a launch pad are whatever the gas did. Nothing of them is laid do
 This mod's own part in it is small. It says which engines are rocket engines, what each burns, where each
 nozzle's mouth is and how wide, and how hard the engine is running; and it hides the flames the game had.
 
+## How it is drawn, so that it looks like fire
+
+The gas goes through a flame at a hundred metres a second and more. A pattern carried with it, as an
+explosion's billows are carried with its smoke, moves many pixels from one frame to the next, and the game's
+smoothing between frames (the TAA of TUFX) smears it to nothing: as first made (0.2.0) the flame was, in the
+user's words, "kind of just like blurred color". So since Volumetric Explosions 0.5.0 a ship's flame is drawn
+with a pattern of its own that is held in the nozzle's frame: read in the jet's own measure, drawn out three
+times along the jet, and carried down it at a walking pace, so that it stays sharp and still reads as flowing.
+
+* **Tongues.** Where the flame is thin (its edge, its far end) the pattern tears it into tongues with sharp
+  edges; where it is thick it burns whole.
+* **A white-hot core in a cooler sheath.** The gas at the edge of the jet starts cooler than at its middle, so
+  the core is white and the sheath yellow and orange, which is where the tongues are.
+* **Streaks.** Brighter and dimmer along the pattern, and hotter and cooler with it.
+* **Each fuel its own.** Kerosene: ragged and sooty (its soot darkens the cooler streaks of its outer part),
+  with faint shock diamonds. Hydrogen: a clear, smooth flame, whole wherever there is any of it, with four or
+  five shock diamonds that glow of themselves (with tongues torn into it, a hydrogen flame looked like cloud).
+  Methane between the two. A solid motor's: dense, bright, ragged, hardly any diamonds. In thin air all of it
+  smooths out into a pale bell, and the diamonds go.
+* **Drawn whole.** A ship's flames are drawn at the screen's own size (the smoke round about at half size, as
+  ever): enlarged from half size, the fine tongues were lost.
+
 ## The air that goes along with the ship
 
 A rocket doing three hundred metres a second goes six metres between one frame and the next, and the
