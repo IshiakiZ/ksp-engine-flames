@@ -13,9 +13,9 @@ both come in the download. It works beside the Waterfall mod
 or without it: while one of its flames burns for an engine, the flame the game or Waterfall draws for that
 engine is hidden, and the smoke is left.
 
-**It is made for the game's OpenGL (a Mac, Linux).** Volumetric Explosions draws its fire with a shader
-made for that. On Windows (Direct3D) there is none yet: the mod says so in its settings and leaves the
-game's flames as they are.
+**It works wherever Volumetric Explosions draws a volume**: on the game's OpenGL (a Mac, Linux), and on
+Windows (Direct3D) with that mod's shaders built for Direct3D. Where it cannot, the mod says so in its
+settings and leaves the game's flames as they are.
 
 ## What it does
 
@@ -75,7 +75,14 @@ In the Keystone window (the keystone button on the game's toolbar, or Option-K o
   flight each way, on an Apple M5 Pro at 1280 by 720, with Scatterer, EVE, TUFX and Natural Light).
 * Made on 2026-10-09 and looked at in pictures and frame by frame: on a test stand from the pad to a
   vacuum, at lift-off by day and night, and on climbs to thirty kilometres. Nobody has played with it yet.
-* Made and tried on a Mac. Linux uses the same OpenGL shader and should work, but it has **not been run**
-  there. On Windows it does nothing yet (see above).
+* Made and tried on a Mac; tried on Windows too (see below).
+
+## Where it works
+
+| System | |
+| --- | --- |
+| Mac | Made and tried here (KSP 1.12.5, OpenGL). |
+| Windows | Tried on Windows 11 (KSP 1.12.5, Direct3D 11), with Volumetric Explosions' shaders built for Direct3D: Kerbal X from the pad to thin air, its flames drawn into the explosions' volume ("1 flame is burning" on its page) and widening into a soft plume high up. Then at night (the sun 23 degrees down): Kerbal X's flames a bright plume climbing into the dark, 72 frames a second at lift-off (the game's cap not lifted); and solid boosters at night (Kerbal 1-5's two Hammers): two orange flames climbing on their trail, 102 frames a second. Not looked at there: Waterfall. |
+| Linux | **Never run.** It uses the same OpenGL shader as the Mac. |
 
 More: [how it works](docs/How-it-works.md).

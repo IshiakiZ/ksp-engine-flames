@@ -36,8 +36,8 @@ namespace EngineFlames
     /// flames the game or Waterfall draws for that engine are hidden, and its smoke is left. Jets, ion
     /// engines and anything it does not know are left as they are.
     ///
-    /// Without Volumetric Explosions, or where that cannot draw a volume (it needs OpenGL: a Mac, Linux),
-    /// this mod does nothing but say so.
+    /// Without Volumetric Explosions, or where that cannot draw a volume (it needs its shaders: OpenGL's on a Mac or Linux, those
+    /// built for Direct3D on Windows), this mod does nothing but say so.
     /// </summary>
     static class Fire
     {
@@ -244,7 +244,7 @@ namespace EngineFlames
             if (wanted && !Feed.Ready())
             {
                 wanted = false;
-                Report = "Volumetric Explosions cannot draw a volume here (it needs OpenGL: a Mac, Linux): the game's own flames are left.";
+                Report = "Volumetric Explosions cannot draw a volume here: the game's own flames are left.";
             }
             if (!wanted)
             {

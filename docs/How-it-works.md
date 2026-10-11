@@ -141,7 +141,8 @@ one patch of air. Not measured: the camera inside a flame, a ship of dozens of n
   is the Natural Light mod's lamps at the engines, where that is installed, or nothing. (It does light the
   smoke of Rocket Smoke.)
 * Smoke. That is Rocket Smoke's; without it the game's own smoke is left as it is.
-* Windows. Volumetric Explosions draws its volumes with a shader made for the game's OpenGL (a Mac,
-  Linux). Until there is one for Direct3D this mod does nothing on Windows but say so.
+* Anything where Volumetric Explosions cannot draw a volume: there it says so and leaves the game's flames.
+  (On Windows that mod's shaders are built for Direct3D, and the flames were seen there on 2026-10-10, by day
+  and by night, liquid engines and solid boosters.)
 * More than four ships' flames at once, and no more than about 1,500 bits of gas a second from any one
   nozzle: a cluster of very many engines is drawn with fewer bits each as the scene fills up.
