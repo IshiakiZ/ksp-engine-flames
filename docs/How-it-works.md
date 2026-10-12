@@ -15,38 +15,57 @@ Each bit:
 * keeps most of its speed all the way, and is carried off by the air as that goes by;
 * widens as it goes, taking in the air beside it;
 * is stirred by the air, its edge far more than its middle;
-* cools: white at the nozzle, yellow down most of the flame's length, out through orange in the last third;
+* cools: white-hot for more than half the flame's length, then yellow, and out through orange at its end;
 * is turned where it strikes the ground or a building, and runs on along it.
 
-A few hundred of these are alive at once for each nozzle. They are put on a grid of cells, as a blast's
+About thirteen hundred of these are alive at once for each nozzle. They are put on a grid of cells, as a blast's
 smoke and fire are, and the grid is drawn as one lit volume: for every pixel the line of sight is walked
-through it and the light of the gas along it is added up. The flame's edge, its flicker, its reach and the
-way it lies on a launch pad are whatever the gas did. Nothing of them is laid down beforehand.
+through it and the light of the gas along it is added up. The flame's reach, its flicker, the way it is swept
+back when a ship flies aslant and the way it lies on a launch pad are whatever the gas did. (What is laid
+down beforehand: the pattern that streaks it and tears its edge, and a clear flame's shock diamonds. See below.)
 
 This mod's own part in it is small. It says which engines are rocket engines, what each burns, where each
 nozzle's mouth is and how wide, and how hard the engine is running; and it hides the flames the game had.
 
-## How it is drawn, so that it looks like fire
+## How it is drawn: bright first, then fire
 
-The gas goes through a flame at a hundred metres a second and more. A pattern carried with it, as an
-explosion's billows are carried with its smoke, moves many pixels from one frame to the next, and the game's
-smoothing between frames (the TAA of TUFX) smears it to nothing: as first made (0.2.0) the flame was, in the
-user's words, "kind of just like blurred color". So since Volumetric Explosions 0.5.0 a ship's flame is drawn
-with a pattern of its own that is held in the nozzle's frame: read in the jet's own measure, drawn out three
-times along the jet, and carried down it at a walking pace, so that it stays sharp and still reads as flowing.
+The first flames made this way (0.2.0) were thin: the gas glowed faintly, cooled to orange a quarter of the
+way down, and was torn into wisps along its whole length. Set beside the game's own flame, a long white-hot
+bar, it looked weak, and the game's was the one that looked like a rocket. Since 0.3.0 (with Volumetric
+Explosions 0.6.0) a kerosene or solid-fuel flame is what a real one is to a camera, blinding:
 
-* **Tongues.** Where the flame is thin (its edge, its far end) the pattern tears it into tongues with sharp
-  edges; where it is thick it burns whole.
-* **A white-hot core in a cooler sheath.** The gas at the edge of the jet starts cooler than at its middle, so
-  the core is white and the sheath yellow and orange, which is where the tongues are.
-* **Streaks.** Brighter and dimmer along the pattern, and hotter and cooler with it.
-* **Each fuel its own.** Kerosene: ragged and sooty (its soot darkens the cooler streaks of its outer part),
-  with faint shock diamonds. Hydrogen: a clear, smooth flame, whole wherever there is any of it, with four or
-  five shock diamonds that glow of themselves (with tongues torn into it, a hydrogen flame looked like cloud).
-  Methane between the two. A solid motor's: dense, bright, ragged, hardly any diamonds. In thin air all of it
-  smooths out into a pale bell, and the diamonds go.
-* **Drawn whole.** A ship's flames are drawn at the screen's own size (the smoke round about at half size, as
-  ever): enlarged from half size, the fine tongues were lost.
+* **A solid white-hot body.** Enough gas, close enough together, that the jet hides what is behind it and
+  burns out the picture: several times as bright as white paper in the sun, with the glow round it that the
+  game's own picture gives anything that bright. It leaves the nozzle hotter than white-hot and so stays white
+  for more than half its length.
+* **Brightness goes with heat, steeply.** The white-hot part is ten times as bright as the cooled orange end.
+  (Nearly as bright at every heat, as at first, the orange end was cut off to a flat yellow by the picture.)
+* **A steady outline.** The bits of gas leave the nozzle's mouth in turn from a list that fills it evenly, not
+  by chance, and there are three times as many: the jet's edge is a straight line at the nozzle, not a row of
+  bulges that changed every frame.
+* **Fire where there would be fire.** A thin cooler sheath, yellow and orange, where the jet meets the air;
+  the air tears its edge more and more the further down it, hardly at all at the nozzle; and at its far end
+  the flame cools out through yellow into ragged orange tongues with gaps between them.
+* **A pattern that flows.** Held in the nozzle's frame (the gas's own, going a hundred metres a second and
+  more, is smeared to nothing by the game's smoothing between frames, the TAA of TUFX: 0.2.0 was first "kind
+  of just like blurred color"). It is carried down the jet fast at the nozzle, where that smoothing draws it
+  out into streaks, as gas going that fast looks, and slower and less drawn out the further down, until at
+  the flame's end it is the slow lumps of a fire; and it opens out with the jet.
+* **Drawn whole.** A ship's flames are drawn at the screen's own size (the smoke round about at half size).
+
+## Each fuel its own
+
+| Fuel | At the ground |
+| --- | --- |
+| kerosene | white-hot, yellow, then orange tongues: as above |
+| solid fuel | the same, thicker and brighter still |
+| hydrogen | a clear pale veil one sees through, with four or five shock diamonds standing in it: a bright disc where each shock stands, narrowing to a point behind it. In the jet of every nozzle, up to eight |
+| methane | bright, half clear, blue-white to violet, with diamonds |
+| the fuels that keep | a bright clean flame, white to pale pink, thinning away |
+| monopropellant, a reactor's | faint and clear |
+
+A hydrogen flame is not made bright: it has next to no light of its own, and a thick white one looked like a
+kerosene flame painted white. Its diamonds are what is seen of it.
 
 ## The air that goes along with the ship
 
@@ -78,15 +97,18 @@ How thin the air is shapes the flame all the way up:
 | | At the pad | 8 km up | 16 km | 26 km | Vacuum |
 | --- | --- | --- | --- | --- | --- |
 | Air (Kerbin), against sea level | 1 | about a quarter | about a twentieth | under a hundredth | none |
-| How much wider the jet gets for each metre it goes | 0.035 m | 0.08 | 0.14 | 0.23 | 0.36 |
-| How far it reaches, against its length at the pad | all of it | 0.93 | 0.82 | 0.67 | 0.45 |
+| How much wider the jet gets for each metre it goes | 0.035 m | 0.08 | 0.14 | 0.23 | it fans out from the lip, 27 degrees each way |
+| How far it reaches, against its length at the pad | all of it | 0.93 | 0.82 | 0.67 | a few nozzles' widths |
 | Its edge | torn | | less | nearly smooth | smooth |
-| Its colour as it goes | white, yellow, orange | | | paler: it thins before it cools | white, fading |
+| What is seen | a white-hot body, orange at its end | | | a wide clear flame, white to yellow | a bright lobe at the nozzle |
 
-In thick air the jet is held to a narrow column, the air tears its edge, and it cools through orange
-before it is spent. With little air or none there is nothing to hold it in and nothing to tear it: it
-opens into a wide bell, is spent in half the length, and stays pale because it has spread to nothing
-before it has cooled.
+In thick air the jet is held to a narrow column, the air tears its edge, and it cools through orange before
+it is spent. As the air thins there is less to hold it in and less to tear it: it opens out, its soot and its
+sharp edge go, and what is seen is the light of the hot gas alone. With none, the gas fans out from the
+nozzle's lip and cools as it spreads, and all that shows is a bright clear lobe at the nozzle, most of it
+along the jet's line, gone within a few nozzles' widths: whatever burns, though each in its own colour.
+(How fast the gas cools is reckoned by the time gone, not by the frame: reckoned by the frame, as at first,
+a vacuum plume was twice as long at thirty frames a second as at sixty.)
 
 ## The ground
 
@@ -100,15 +122,18 @@ that is installed, rolls up from it. The same is done for buildings and for othe
 See [flames for other engines](Other-engines.md). What is burning sets the flame's colours, how bright it
 is, and a little of its length and width:
 
-| Fuel | Colours | How bright, against kerosene |
+| Fuel | Colours | How thick its gas is, against kerosene's |
 | --- | --- | --- |
 | kerosene | white, yellow, orange | 1 |
-| hydrogen | white to pale blue | 0.38 |
-| methane | white to blue and violet | 0.6 |
-| the fuels that keep | white to blue-white | 0.45 |
-| solid fuel | white, yellow, orange, and whiter than kerosene | 1.7 |
-| monopropellant | pale yellow | 0.14 |
-| fuel heated by a reactor | a faint red | 0.3 |
+| hydrogen | white to pale blue | 0.08 |
+| methane | white to blue and violet | 0.25 |
+| the fuels that keep | white to pale pink | 0.3 |
+| solid fuel | white, yellow, orange, and whiter than kerosene | 1.5 |
+| monopropellant | pale yellow | 0.12 |
+| fuel heated by a reactor | a faint red | 0.15 |
+
+(These are Volumetric Explosions' to know since its 0.6.0: this mod says only which fuel, and how hard the
+engine is running.)
 
 ## Starting and stopping
 
@@ -126,23 +151,34 @@ off, or the setting "Hide the game's own flames", and they are back.
 
 ## What it costs
 
-About what the flames it hides cost. One flight each way of a Kerbal X (a Mainsail and six Swivels) from
-the pad, on an Apple M5 Pro at 1280 by 720 with Scatterer, EVE, TUFX, Waterfall and Natural Light
-installed, the game drawing as fast as it could: 39 frames a second leaving the pad with the game's and
-Waterfall's flames and 42 with these; 45 and 49 on the climb, seen from the chase camera; 50 and 49
-standing on the pad before it was lit. At the end of the climb the seven flames were 3,400 bits of gas in
-one patch of air. Not measured: the camera inside a flame, a ship of dozens of nozzles, a slower computer.
+Less than the flames it hides, where it was measured: a Kerbal X (a Mainsail and six Swivels) from the pad,
+with Rocket Smoke's smoke in both, on an Apple M5 Pro at 1280 by 720 with Scatterer, EVE, TUFX, Waterfall,
+Natural Light and Natural Weather installed, the game drawing as fast as it could, two flights each way
+(0.3.0, 2026-10-10):
+
+| | Standing on the pad | Its first 4 s | 4 to 8 s | 8 to 12 s | 12 to 16 s |
+| --- | --- | --- | --- | --- | --- |
+| The game's and Waterfall's flames | 53 frames a second | 35, 38 | 40 | 40 | 42 |
+| These | 53 | 41, 40 | 44 | 44 | 46 |
+
+The seven flames were about 6,000 bits of gas in one patch of air, three times what they were in 0.2.0. Not
+measured: the camera inside a flame, a ship of dozens of nozzles, a slower computer.
 
 ## What it does not do
 
-* **Shock diamonds.** The first version drew them. Gas worked out in bits a third of a nozzle across does
-  not form them, and none are drawn on top.
+* Shock diamonds that come of the gas itself: gas worked out in bits a third of a nozzle across does not
+  form them. The ones in a hydrogen or methane flame are drawn where they would stand, in up to eight of a
+  ship's jets; a kerosene or solid-fuel flame is too bright for any to show, as a real one's is to a camera.
 * Light on the ship and the ground. It gives off none: what lights the pad at lift-off in the pictures
   is the Natural Light mod's lamps at the engines, where that is installed, or nothing. (It does light the
   smoke of Rocket Smoke.)
 * Smoke. That is Rocket Smoke's; without it the game's own smoke is left as it is.
 * Anything where Volumetric Explosions cannot draw a volume: there it says so and leaves the game's flames.
   (On Windows that mod's shaders are built for Direct3D, and the flames were seen there on 2026-10-10, by day
-  and by night, liquid engines and solid boosters.)
-* More than four ships' flames at once, and no more than about 1,500 bits of gas a second from any one
-  nozzle: a cluster of very many engines is drawn with fewer bits each as the scene fills up.
+  and by night, liquid engines and solid boosters: as they were in 0.2.0. The bright flames of 0.3.0 were seen
+  there on 2026-10-11, by day, with Volumetric Explosions 0.6.3's shaders built for Direct3D again that day:
+  Kerbal X and Kerbal 1-5 from the pad, as on OpenGL on the same computer. Not at night, and no shock diamonds
+  made out from 75 m.)
+* More than four ships' flames at once, and no more than about 5,000 bits of gas a second from any one
+  nozzle (some 1,300 alive at a time): a cluster of very many engines is drawn with fewer bits each as the
+  scene fills up.

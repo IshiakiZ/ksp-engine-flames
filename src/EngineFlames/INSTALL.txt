@@ -7,7 +7,7 @@ it. Worked out bit by bit and drawn as a true volume, as the Volumetric Explosio
 its fire, in whose air it burns.
 
 INSTALL
-  Copy the three folders in this download's GameData (Keystone, VolumetricExplosions and
+  Copy the three folders in this download (Keystone, VolumetricExplosions and
   EngineFlames) into your KSP's GameData folder, and start the game. Keystone is the base this
   mod stands on, and Volumetric Explosions makes and draws the fire: one copy of each serves
   every mod that uses it. To remove the mod, delete the EngineFlames folder.
@@ -22,6 +22,10 @@ BESIDE OTHER MODS
   the flame the game or Waterfall draws for that engine is hidden; the smoke is left (the
   Rocket Smoke mod does for smoke what this does for flames). Jets, ion engines and engines
   that burn something it does not know keep the flames they had.
+
+KNOWN FAULT
+  The flame does not yet move as fire does: it keeps its line when the ship turns, like a
+  rod, and nothing in it is seen to stream. Being reworked.
 
 WHERE IT WORKS
   Made and tried on a Mac, and tried on Windows 11. The flames are drawn by Volumetric

@@ -4,7 +4,7 @@ using Keystone;
 using UnityEngine;
 
 #if !DEV
-[assembly: KSPAssembly("EngineFlames", 0, 2)]
+[assembly: KSPAssembly("EngineFlames", 0, 3)]
 [assembly: KSPAssemblyDependency("Keystone", 0, 5)]
 #endif
 
@@ -41,7 +41,7 @@ namespace EngineFlames
     /// </summary>
     static class Fire
     {
-        public const string Version = "0.2.0";
+        public const string Version = "0.3.0";
 
         public static Mod Page;
         public static Toggle On, Hide;
@@ -74,7 +74,8 @@ namespace EngineFlames
         /// <summary>
         /// What a kind of propellant burns like: which of the colours of fire that Volumetric Explosions knows
         /// (Tint: 0 fuel, 1 solid propellant, 2 monopropellant, 4 hydrogen, 5 methane, 6 the fuels that keep,
-        /// 7 gas heated by a reactor), how bright against a kerosene engine's, and how long and wide against the usual.
+        /// 7 gas heated by a reactor), how bright against that kind's own usual, and how long and wide against the usual.
+        /// (What each kind of fire is like, how thick, how bright, how torn, is the explosions mod's to know.)
         /// </summary>
         sealed class Kind
         {
@@ -82,24 +83,27 @@ namespace EngineFlames
             public string Name;
             public int Tint;
             public float Bright = 1f, Long = 1f, Wide = 1f;
+            // (How bright against kerosene's, for the explosions mod before its 0.6.0, which had to be told: since then it
+            // knows what each kind of fire is like, and Bright is against that fuel's own usual.)
+            public float Was = 1f;
         }
 
         static readonly Kind[] Kinds =
         {
-            // Kerosene and oxygen: yellow-white at the heart, orange outside, and plenty of it.
-            new Kind { Fuel = Fuel.Kerosene, Name = "kerosene and oxygen", Tint = 0, Bright = 1f },
-            // Hydrogen and oxygen: nearly no light of its own, pale blue.
-            new Kind { Fuel = Fuel.Hydrogen, Name = "hydrogen and oxygen", Tint = 4, Bright = 0.38f, Long = 1.1f },
+            // Kerosene and oxygen: a blinding white-hot body, yellow and orange where it cools.
+            new Kind { Fuel = Fuel.Kerosene, Name = "kerosene and oxygen", Tint = 0 },
+            // Hydrogen and oxygen: nearly no light of its own, a clear pale blue with shock diamonds in it.
+            new Kind { Fuel = Fuel.Hydrogen, Name = "hydrogen and oxygen", Tint = 4, Was = 0.38f, Long = 1.1f },
             // Methane and oxygen: blue to violet.
-            new Kind { Fuel = Fuel.Methane, Name = "methane and oxygen", Tint = 5, Bright = 0.6f },
-            // Fuels that keep (the small engines of upper stages and landers): a thin clean flame.
-            new Kind { Fuel = Fuel.Storable, Name = "fuels that keep", Tint = 6, Bright = 0.45f, Long = 0.9f },
-            // Solid fuel: brilliant, thick with burning metal, wide and long.
-            new Kind { Fuel = Fuel.Solid, Name = "solid fuel", Tint = 1, Bright = 1.7f, Wide = 1.1f },
+            new Kind { Fuel = Fuel.Methane, Name = "methane and oxygen", Tint = 5, Was = 0.6f },
+            // Fuels that keep (the small engines of upper stages and landers): a clean bright flame, white to pale pink.
+            new Kind { Fuel = Fuel.Storable, Name = "fuels that keep", Tint = 6, Was = 0.45f, Long = 0.9f },
+            // Solid fuel: the brightest of all, thick with burning metal, wide and long.
+            new Kind { Fuel = Fuel.Solid, Name = "solid fuel", Tint = 1, Was = 1.7f, Wide = 1.1f },
             // Monopropellant: steam and nitrogen, all but without light.
-            new Kind { Fuel = Fuel.Mono, Name = "monopropellant", Tint = 2, Bright = 0.14f, Long = 0.7f },
+            new Kind { Fuel = Fuel.Mono, Name = "monopropellant", Tint = 2, Was = 0.14f, Long = 0.7f },
             // Fuel heated by a reactor: hot hydrogen and nothing burning, a faint red.
-            new Kind { Fuel = Fuel.Reactor, Name = "fuel heated by a reactor", Tint = 7, Bright = 0.3f },
+            new Kind { Fuel = Fuel.Reactor, Name = "fuel heated by a reactor", Tint = 7, Was = 0.3f },
         };
 
         /// <summary>The flame of what an engine burns (which fuel each engine is taken as burning is Keystone's to say: see Keystone.Engines), or none.</summary>
@@ -280,7 +284,7 @@ namespace EngineFlames
                 Vector3 along = p.Nozzle.forward, rim = p.Nozzle.position + along * p.Rim;
                 // (an engine throttled down has a shorter flame, and a fainter one)
                 p.Length = Engines.Flame(k.Fuel, p.Radius) * k.Long * longer * (0.3f + 0.7f * Mathf.Sqrt(running));
-                float fire = k.Bright * glow * (0.3f + 0.7f * running);
+                float fire = (Feed.KnowsFuels ? k.Bright : k.Was) * glow * (0.3f + 0.7f * running);
                 bool taken = Feed.Flame(p.Id, rim, along, v.srf_velocity, nozzle, p.Length, running, k.Tint, fire, v.transform);
                 if (taken)
                 {
@@ -537,6 +541,18 @@ namespace EngineFlames
         public static void Hook(Action asked) { VolumetricExplosions.Sources.Asked += asked; }
         public static void Unhook(Action asked) { VolumetricExplosions.Sources.Asked -= asked; }
         public static bool Ready() => VolumetricExplosions.Sources.Ready;
+
+        /// <summary>Whether the explosions mod installed knows for itself how bright each kind of fire is (0.6.0 and later).</summary>
+        public static bool KnowsFuels
+        {
+            get
+            {
+                if (knows == 0) { try { knows = Level() >= 2 ? 1 : -1; } catch (Exception) { knows = -1; } }
+                return knows > 0;
+            }
+        }
+        static int knows;
+        static int Level() => VolumetricExplosions.Sources.Level;
 
         public static bool Flame(int id, Vector3 rim, Vector3 along, Vector3d going, float nozzle, float length, float running, int tint, float fire, Transform ship)
         {
