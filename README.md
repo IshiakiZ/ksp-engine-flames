@@ -9,7 +9,8 @@ makes its fire, in whose air it burns.
 
 For Kerbal Space Program 1.12.x. Needs [Volumetric Explosions](https://github.com/IshiakiZ/ksp-volumetric-explosions) 0.6.0 or
 later for the look described here (it runs with 0.4 and 0.5, as dimmer and thinner flames) and
-[Keystone](https://github.com/IshiakiZ/ksp-keystone); both come in the download. It works beside the Waterfall mod
+[Keystone](https://github.com/IshiakiZ/ksp-keystone). Each is a separate download, and this mod does not load without both: [Volumetric
+Explosions](https://spacedock.info/mod/4669/Volumetric%20Explosions) and [Keystone](https://spacedock.info/mod/4665/Keystone) on SpaceDock. It works beside the Waterfall mod
 or without it: while one of its flames burns for an engine, the flame the game or Waterfall draws for that
 engine is hidden, and the smoke is left.
 
@@ -47,8 +48,9 @@ the Waterfall mod's on the liquid engines. The smoke in all of them is the game'
 
 ## Install
 
-Copy the `Keystone`, `VolumetricExplosions` and `EngineFlames` folders from the download into
-your KSP `GameData`.
+Install [Keystone](https://github.com/IshiakiZ/ksp-keystone) and [Volumetric Explosions](https://github.com/IshiakiZ/ksp-volumetric-explosions) first: each is a download
+of its own, and its folder goes into your KSP `GameData`. Then copy the `EngineFlames` folder from this mod's download
+into `GameData` beside them.
 
 ## Settings
 
@@ -64,10 +66,11 @@ In the Keystone window (the keystone button on the game's toolbar, or Option-K o
 
 ## Good to know
 
-* **It does not yet move as fire does** (found by playing, 2026-10-11): the flame keeps its line when the ship
-  turns, like a rod, where a real one's cooler end would trail; and nothing in it is seen to stream, so it looks
-  slow. Being reworked: the gas is to slow along the jet as a real one does, and to be left behind by a nozzle
-  that swings away from it.
+* **It moves as fire does, with Volumetric Explosions 0.6.4 or later.** With an older one the flame keeps its line
+  when the ship turns, like a rod, and nothing in it is seen to stream (as the mod's owner found, by playing). Since
+  0.6.4 the gas slows along the jet as a real one does, so the flame's far end trails when the ship turns and its
+  nozzle swings away; it comes out uneven from one moment to the next; and what is in it streams. Looked at so far
+  on the stand in a turn, at lift-off and in a climb (kerosene by day), and each kind of flame once in a film.
 * Rocket engines only. Jets, ion engines and engines that burn something it does not know keep the flames
   they had.
 * The game has one fuel for every liquid engine. Which real fuel each of the game's engines is taken as

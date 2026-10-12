@@ -41,7 +41,7 @@ namespace EngineFlames
     /// </summary>
     static class Fire
     {
-        public const string Version = "0.3.0";
+        public const string Version = "0.3.1";
 
         public static Mod Page;
         public static Toggle On, Hide;
