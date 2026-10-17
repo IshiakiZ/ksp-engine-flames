@@ -4,7 +4,7 @@ using Keystone;
 using UnityEngine;
 
 #if !DEV
-[assembly: KSPAssembly("EngineFlames", 0, 3)]
+[assembly: KSPAssembly("EngineFlames", 0, 4)]
 [assembly: KSPAssemblyDependency("Keystone", 0, 5)]
 #endif
 
@@ -41,11 +41,11 @@ namespace EngineFlames
     /// </summary>
     static class Fire
     {
-        public const string Version = "0.3.1";
+        public const string Version = "0.4.0";
 
         public static Mod Page;
-        public static Toggle On, Hide;
-        public static Slider Glow, Long, Wide;
+        public static Toggle On, Hide, Reentry, ReentryHideStock;
+        public static Slider Glow, Long, Wide, ReentryGlow;
         public static string Why = "";
 
         public static void Setup()
@@ -57,6 +57,9 @@ namespace EngineFlames
             Long = Page.Slider("long", "How long", 1f, 0.4f, 2.5f, "", 2, "How long the flames are.");
             Wide = Page.Slider("wide", "How wide", 1f, 0.5f, 2f, "", 2, "How wide the flames are. A nozzle's width is measured from the engine's model (or, where that cannot be done, worked out from its thrust); this corrects it.");
             Hide = Page.Toggle("hide", "Hide the game's own flames", true, "While a flame of this mod's is drawn for an engine, the flames the game or Waterfall draws for it are hidden. Smoke is left.");
+            Reentry = Page.Toggle("reentry", "Re-entry fire", true, "Coming into an atmosphere fast, a craft glows: a white-hot layer of air standing off the face that meets it, streaming back past its sides into a wake that cools from gold through orange to pink-violet. Drawn as a true volume where the game's own fire would be. Off: the game's own streaks.");
+            ReentryGlow = Page.Slider("reentryGlow", "How bright the re-entry fire is", 1f, 0.2f, 3f, "", 2, "How bright the re-entry fire and its light are.");
+            ReentryHideStock = Page.Toggle("reentryHide", "Hide the game's own re-entry streaks", true, "While this mod's re-entry fire burns for the craft being flown, the game's flat streaks and their light are kept off (its sound and shaking are left).");
         }
 
         public static void Log(string text) => Kit.Log("Engine Flames", text);
@@ -150,7 +153,7 @@ namespace EngineFlames
         }
 
         /// <summary>Whether the mod this one stands on is there to be asked. (Looked for by name, so that this mod loads without it.)</summary>
-        static bool Installed()
+        internal static bool Installed()
         {
             foreach (System.Reflection.Assembly a in AppDomain.CurrentDomain.GetAssemblies())
                 if (a.GetType("VolumetricExplosions.Sources", false) != null) return true;
@@ -167,7 +170,7 @@ namespace EngineFlames
 
         void Panel()
         {
-            GUILayout.Label(Fire.Why.Length > 0 ? Fire.Why : Report, Host.Small);
+            GUILayout.Label(Fire.Why.Length > 0 ? Fire.Why : Report + (Reentry.Report.Length > 0 ? " " + Reentry.Report : ""), Host.Small);
         }
 
         static void Show(Plume p)
@@ -553,6 +556,29 @@ namespace EngineFlames
         }
         static int knows;
         static int Level() => VolumetricExplosions.Sources.Level;
+
+        /// <summary>Whether the explosions mod installed knows a craft's re-entry glow (ExhaustKind.Plasma: 0.7.0 and later).</summary>
+        public static bool KnowsPlasma
+        {
+            get
+            {
+                if (plasma == 0) { try { plasma = Level() >= 3 ? 1 : -1; } catch (Exception) { plasma = -1; } }
+                return plasma > 0;
+            }
+        }
+        static int plasma;
+
+        /// <summary>A craft's re-entry glow (see Reentry): its face, the way the air goes past, how wide it is across the air, how far behind the face the flow closes in behind it (its neck), how far its wake glows.</summary>
+        public static bool Plasma(int id, Vector3 face, Vector3 along, Vector3d going, float radius, float neck, float length, float running, float fire, Transform ship)
+        {
+            var exhaust = new VolumetricExplosions.Exhaust
+            {
+                id = id, rim = (Vector3d)face, along = (Vector3d)along, going = going, nozzle = radius, flame = length, running = running, reach = neck,
+                // (the explosions mod's own number for this kind of fire, Site.PlasmaKind, and for this kind of source)
+                tint = 8, fire = fire, rides = ship, kind = VolumetricExplosions.ExhaustKind.Plasma,
+            };
+            return VolumetricExplosions.Sources.Burning(exhaust);
+        }
 
         public static bool Flame(int id, Vector3 rim, Vector3 along, Vector3d going, float nozzle, float length, float running, int tint, float fire, Transform ship)
         {

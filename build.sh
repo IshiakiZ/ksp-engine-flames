@@ -34,14 +34,25 @@ if [ -f src/EngineFlames/needs.txt ]; then
   done < src/EngineFlames/needs.txt
 fi
 
+# A companion library for the Harmony mod, where this mod has one (src/EngineFlamesHarmony): built against this mod and against
+# Harmony, only where Harmony is installed in the game, and loaded by the game only where it is.
+HARMONY="$KSP_DIR/GameData/000_Harmony/0Harmony.dll"
+companion() {  # companion <folder the mod's own library is in>
+  [ -d src/EngineFlamesHarmony ] || return 0
+  if [ -f "$HARMONY" ]; then WITH="$KEYSTONE:$1/EngineFlames.dll:$HARMONY" compile "$1/EngineFlamesHarmony.dll" "" src/EngineFlamesHarmony
+  else rm -f "$1/EngineFlamesHarmony.dll"; echo "left out: EngineFlamesHarmony (Harmony is not installed here to build it against)"; fi
+}
+
 case "$MODE" in
   check)
     WITH="$KEYSTONE" compile "$TMP/EngineFlames.dll" "" src/EngineFlames
+    companion "$TMP"
     echo "ok: compiles"
     ;;
   dist|install)
     mkdir -p "$OUT"
     WITH="$KEYSTONE" compile "$OUT/EngineFlames.dll" "" src/EngineFlames
+    companion "$OUT"
     # (the mod's own shaders, if it has any: made by tools/shaderpack/make_bundle.py and kept ready made in src/EngineFlames/Shaders)
     if ls src/EngineFlames/Shaders/*.bundle >/dev/null 2>&1; then mkdir -p "$OUT/PluginData"; cp src/EngineFlames/Shaders/*.bundle "$OUT/PluginData/"; fi
     # (and anything else it keeps in src/EngineFlames/PluginData: a craft file, say)
@@ -49,6 +60,8 @@ case "$MODE" in
     if [ "$MODE" = dist ]; then echo "ok: built into $OUT"; exit 0; fi
     mkdir -p "$KSP_DIR/GameData/EngineFlames"
     cp "$OUT/EngineFlames.dll" "$KSP_DIR/GameData/EngineFlames/"
+    rm -f "$KSP_DIR/GameData/EngineFlames/EngineFlamesHarmony.dll"
+    [ -f "$OUT/EngineFlamesHarmony.dll" ] && cp "$OUT/EngineFlamesHarmony.dll" "$KSP_DIR/GameData/EngineFlames/"
     if [ -d "$OUT/PluginData" ]; then mkdir -p "$KSP_DIR/GameData/EngineFlames/PluginData"; cp -R "$OUT/PluginData/." "$KSP_DIR/GameData/EngineFlames/PluginData/"; fi
     echo "ok: Engine Flames installed to $KSP_DIR/GameData/EngineFlames (restart KSP to load it; it needs Keystone there too)"
     ;;

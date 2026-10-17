@@ -30,6 +30,13 @@ USE VOLUMETRIC EXPLOSIONS 0.6.4 OR LATER
   With it the flame moves as fire does: its far end trails when the ship turns, and what is
   in it streams. With an older one it works, but keeps its line like a rod.
 
+RE-ENTRY FIRE (0.4.0, WITH VOLUMETRIC EXPLOSIONS 0.7.0 OR LATER)
+  A craft coming into an atmosphere fast glows: white-hot air standing off its heat shield,
+  streaming back past its sides into a wake that cools from gold through orange to
+  pink-violet, drawn as a true volume where and when the game's own flat streaks would
+  show, and those are hidden meanwhile. With an older Volumetric Explosions the game's own
+  streaks are left. Its switches are on the mod's Keystone page.
+
 WHERE IT WORKS
   Made and tried on a Mac, and tried on Windows 11. The flames are drawn by Volumetric
   Explosions' shaders, packed for the game's OpenGL (a Mac, Linux) and built for Direct3D
