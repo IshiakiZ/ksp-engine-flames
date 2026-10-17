@@ -6,6 +6,10 @@ volume, not painted.
 
 ![Six flames: day and night lift-off, kerosene, hydrogen, thin air, vacuum](src/EngineFlames/img/engine-flames.jpg)
 
+![A big engine's flame on a test stand, its tongues breaking up as they cool](src/EngineFlames/img/engine-flames-stand.gif)
+
+![A rocket climbing at 4 km over the sea, its flame and trail](src/EngineFlames/img/engine-flames-climb.gif)
+
 For Kerbal Space Program 1.12.x. **Needs two other mods**, each a separate download, and does not load without both:
 [Keystone](https://github.com/IshiakiZ/ksp-keystone) ([on SpaceDock](https://spacedock.info/mod/4665/Keystone)) and
 [Volumetric Explosions](https://github.com/IshiakiZ/ksp-volumetric-explosions) 0.6.4 or later
