@@ -26,6 +26,8 @@ For Kerbal Space Program 1.12.x. **Needs two other mods**, each a separate downl
 * With or without Waterfall: the game's or Waterfall's flame is hidden while this one burns.
 * **Starts and stops as real engines do** (0.5.0): the flame builds as an engine lights (a kerosene engine with its igniter's green flash, a solid motor in a burst), falls back as it stops, flickers as the tanks run dry; a jet's afterburner as a thin flame with a row of shock diamonds; a vacuum engine's bell glowing red-orange through a long burn.
 
+![The test rocket's kerosene engines lit on the pad, from close by: the flame building and the climb away](src/EngineFlames/img/engine-flames-ignite.gif)
+
 ## Install
 
 Copy the `EngineFlames` folder from the download into your KSP's `GameData`, beside `Keystone` and
