@@ -28,7 +28,7 @@ namespace EngineFlames
     /// What is burning: the game has one fuel for every liquid engine; its engines are taken as burning
     /// what the engines they were modelled on burn (that is Keystone's to say, for every mod that draws
     /// exhaust: see Keystone.Engines). Kerosene yellow-white; hydrogen pale blue and faint; the fuels of
-    /// small upper-stage engines a thin blue-white; a solid booster brilliant; hydrazine nearly without
+    /// small upper-stage engines all but clear, salmon where it shows, with bright diamonds; a solid booster brilliant; hydrazine nearly without
     /// light; hydrogen heated by a reactor a faint red.
     ///
     /// Each nozzle of each rocket engine gets one. How wide a nozzle is and where its rim is are measured
@@ -41,10 +41,10 @@ namespace EngineFlames
     /// </summary>
     static class Fire
     {
-        public const string Version = "0.4.0";
+        public const string Version = "0.5.0";
 
         public static Mod Page;
-        public static Toggle On, Hide, Reentry, ReentryHideStock;
+        public static Toggle On, Hide, Reentry, ReentryHideStock, Lighting, Vacuum, Moments, Bells;
         public static Slider Glow, Long, Wide, ReentryGlow;
         public static string Why = "";
 
@@ -57,9 +57,16 @@ namespace EngineFlames
             Long = Page.Slider("long", "How long", 1f, 0.4f, 2.5f, "", 2, "How long the flames are.");
             Wide = Page.Slider("wide", "How wide", 1f, 0.5f, 2f, "", 2, "How wide the flames are. A nozzle's width is measured from the engine's model (or, where that cannot be done, worked out from its thrust); this corrects it.");
             Hide = Page.Toggle("hide", "Hide the game's own flames", true, "While a flame of this mod's is drawn for an engine, the flames the game or Waterfall draws for it are hidden. Smoke is left.");
+            Vacuum = Page.Toggle("vacuum", "Flames in a vacuum", true, "Off: where there is next to no air (high above the ground, or on a world with none), no flame of this mod's is drawn, and the game's own (or Waterfall's) is left as it is.");
+            Moments = Page.Toggle("moments", "Engines start and stop as real ones do", true, "A flame builds over a second as an engine starts (a kerosene engine with the green flash of its igniter, a solid motor in a burst), falls back as it stops (a solid motor tails off in chuffs), and flickers as the tanks run dry. Off: the flame comes and goes at once, as the game's does.");
+            Bells = Page.Toggle("bells", "Vacuum engines' bells glow with heat", true, "An engine made for vacuum has a long nozzle that nothing cools but its own light: through a long burn it heats until it glows dull red, then orange, and after the burn it cools within seconds, as the bells of real upper stages do.");
+            Lighting = Page.Toggle("light", "Flames light what is round them", true, "A running engine's flame lights the craft and the ground it strikes, more strongly as the daylight goes. Where Natural Light or the Engine Lighting mod is installed, they light it instead.");
+#if DEV
+            // (the re-entry fire's, in the development build only since 0.5.0: see Reentry)
             Reentry = Page.Toggle("reentry", "Re-entry fire", true, "Coming into an atmosphere fast, a craft glows: a white-hot layer of air standing off the face that meets it, streaming back past its sides into a wake that cools from gold through orange to pink-violet. Drawn as a true volume where the game's own fire would be. Off: the game's own streaks.");
             ReentryGlow = Page.Slider("reentryGlow", "How bright the re-entry fire is", 1f, 0.2f, 3f, "", 2, "How bright the re-entry fire and its light are.");
             ReentryHideStock = Page.Toggle("reentryHide", "Hide the game's own re-entry streaks", true, "While this mod's re-entry fire burns for the craft being flown, the game's flat streaks and their light are kept off (its sound and shaking are left).");
+#endif
         }
 
         public static void Log(string text) => Kit.Log("Engine Flames", text);
@@ -72,7 +79,7 @@ namespace EngineFlames
     }
 
     [KSPAddon(KSPAddon.Startup.Flight, false)]
-    public sealed class Flames : MonoBehaviour
+    public sealed partial class Flames : MonoBehaviour
     {
         /// <summary>
         /// What a kind of propellant burns like: which of the colours of fire that Volumetric Explosions knows
@@ -86,6 +93,9 @@ namespace EngineFlames
             public string Name;
             public int Tint;
             public float Bright = 1f, Long = 1f, Wide = 1f;
+            // (the light it throws round it: its colour, and how much for its thrust against kerosene's; see Light.cs)
+            public Color Light = new Color(1f, 0.78f, 0.5f);
+            public float Shines = 1f;
             // (How bright against kerosene's, for the explosions mod before its 0.6.0, which had to be told: since then it
             // knows what each kind of fire is like, and Bright is against that fuel's own usual.)
             public float Was = 1f;
@@ -96,25 +106,46 @@ namespace EngineFlames
             // Kerosene and oxygen: a blinding white-hot body, yellow and orange where it cools.
             new Kind { Fuel = Fuel.Kerosene, Name = "kerosene and oxygen", Tint = 0 },
             // Hydrogen and oxygen: nearly no light of its own, a clear pale blue with shock diamonds in it.
-            new Kind { Fuel = Fuel.Hydrogen, Name = "hydrogen and oxygen", Tint = 4, Was = 0.38f, Long = 1.1f },
+            new Kind { Fuel = Fuel.Hydrogen, Name = "hydrogen and oxygen", Tint = 4, Was = 0.38f, Long = 1.1f, Light = new Color(0.72f, 0.8f, 1f), Shines = 0.25f },
             // Methane and oxygen: blue to violet.
-            new Kind { Fuel = Fuel.Methane, Name = "methane and oxygen", Tint = 5, Was = 0.6f },
-            // Fuels that keep (the small engines of upper stages and landers): a clean bright flame, white to pale pink.
-            new Kind { Fuel = Fuel.Storable, Name = "fuels that keep", Tint = 6, Was = 0.45f, Long = 0.9f },
+            new Kind { Fuel = Fuel.Methane, Name = "methane and oxygen", Tint = 5, Was = 0.6f, Light = new Color(0.78f, 0.74f, 1f), Shines = 0.5f },
+            // Fuels that keep (the small engines of upper stages and landers: nitrogen tetroxide and a hydrazine, as Titan's and
+            // Proton's burn): all but clear, salmon and peach where it shows, with bright shock diamonds standing in it.
+            new Kind { Fuel = Fuel.Storable, Name = "fuels that keep", Tint = 6, Was = 0.45f, Long = 0.9f, Light = new Color(1f, 0.82f, 0.7f), Shines = 0.45f },
             // Solid fuel: the brightest of all, thick with burning metal, wide and long.
-            new Kind { Fuel = Fuel.Solid, Name = "solid fuel", Tint = 1, Was = 1.7f, Wide = 1.1f },
+            new Kind { Fuel = Fuel.Solid, Name = "solid fuel", Tint = 1, Was = 1.7f, Wide = 1.1f, Light = new Color(1f, 0.88f, 0.7f), Shines = 1.6f },
             // Monopropellant: steam and nitrogen, all but without light.
-            new Kind { Fuel = Fuel.Mono, Name = "monopropellant", Tint = 2, Was = 0.14f, Long = 0.7f },
+            new Kind { Fuel = Fuel.Mono, Name = "monopropellant", Tint = 2, Was = 0.14f, Long = 0.7f, Light = new Color(0.9f, 0.9f, 1f), Shines = 0.08f },
             // Fuel heated by a reactor: hot hydrogen and nothing burning, a faint red.
-            new Kind { Fuel = Fuel.Reactor, Name = "fuel heated by a reactor", Tint = 7, Was = 0.3f },
+            new Kind { Fuel = Fuel.Reactor, Name = "fuel heated by a reactor", Tint = 7, Was = 0.3f, Light = new Color(1f, 0.55f, 0.45f), Shines = 0.3f },
         };
+
+        /// <summary>
+        /// (Since 0.5.0.) A jet's afterburner (the explosions mod's fire of tint 9, from its 0.8.0). A jet's own exhaust is next to
+        /// nothing to see, hot clear air (the game's shimmer is left for it); with its afterburner lit, fuel burnt again in the tail
+        /// pipe, it is a long thin flame, blue-violet where it burns, with a row of yellow-white shock diamonds where the gas is
+        /// squeezed and the fuel left in it lights again, and an orange tail: most of what is seen is the diamonds. The game's
+        /// Panther in its wet mode, the Whiplash and the RAPIER breathing air, and any engine whose mode is named so.
+        /// </summary>
+        static readonly Kind Afterburner = new Kind { Fuel = Fuel.None, Name = "a jet's afterburner", Tint = 9, Was = 0.5f, Long = 1f, Light = new Color(1f, 0.72f, 0.48f), Shines = 0.4f };
+
+        static bool Afterburns(ModuleEngines engine, string part)
+        {
+            if (engine == null || !Feed.KnowsJets) return false;
+            bool breathes = engine.engineType == EngineType.Turbine;
+            foreach (Propellant p in engine.propellants) if (p.name == "IntakeAir" || p.name == "IntakeAtm") breathes = true;
+            if (!breathes) return false;
+            string id = (engine.engineID ?? "").ToLowerInvariant();
+            if (id.Contains("wet") || id.Contains("afterburn") || id.Contains("reheat") || id.Contains("ramjet") || id.Contains("airbreathing")) return true;
+            return part == "turboFanEngine";               // (the Whiplash, a turbo-ramjet: one mode, burning as an afterburner does)
+        }
 
         /// <summary>The flame of what an engine burns (which fuel each engine is taken as burning is Keystone's to say: see Keystone.Engines), or none.</summary>
         static Kind Burns(ModuleEngines engine, string part)
         {
             Fuel fuel = Engines.Burns(engine, part);
             foreach (Kind k in Kinds) if (k.Fuel == fuel) return k;
-            return null;
+            return Afterburns(engine, part) ? Afterburner : null;
         }
 
         /// <summary>One nozzle of one engine.</summary>
@@ -126,7 +157,9 @@ namespace EngineFlames
             public Kind Kind;
             public int Id;
             public float Guess, Radius, Rim, Share, Length, Running, Seen = -100f, HidAt;
-            public bool Measured;
+            public bool Measured, Burning;
+            // (since 0.5.0: when it last lit, when it last stopped and how hard it was burning then; see Moment)
+            public float LitAt = -100f, CutAt = -100f, CutFrom, Shown;
             public readonly List<Renderer> Hidden = new List<Renderer>();
         }
 
@@ -136,6 +169,9 @@ namespace EngineFlames
         bool hooked;
         public static string Report = "";
 
+        // (in a method of its own: a Keystone from before 2026-10-18 has no such thing, and it is the method that names it that fails)
+        static void AskAhead() => Engines.MeasureAhead = true;
+
         void Awake()
         {
             Fire.Setup();
@@ -144,6 +180,8 @@ namespace EngineFlames
             {
                 try { Feed.Hook(Asked); hooked = true; }
                 catch (Exception ex) { Fire.Why = "Volumetric Explosions is installed but is not a version this works with (" + ex.GetType().Name + "): the game's own flames are left."; Fire.Log(Fire.Why); }
+                // (the nozzles measured by Keystone ahead of the lift-off, not at it: see Keystone's Engines.MeasureAhead)
+                if (hooked) try { AskAhead(); } catch (Exception) { }
             }
             else
             {
@@ -162,6 +200,8 @@ namespace EngineFlames
 
         void OnDestroy()
         {
+            Lights.Gone();
+            Glow.Gone();
             if (hooked) { try { Feed.Unhook(Asked); } catch (Exception) { } }
             foreach (Plume p in plumes) Show(p);
             plumes.Clear();
@@ -170,7 +210,11 @@ namespace EngineFlames
 
         void Panel()
         {
+#if DEV
             GUILayout.Label(Fire.Why.Length > 0 ? Fire.Why : Report + (Reentry.Report.Length > 0 ? " " + Reentry.Report : ""), Host.Small);
+#else
+            GUILayout.Label(Fire.Why.Length > 0 ? Fire.Why : Report, Host.Small);
+#endif
         }
 
         static void Show(Plume p)
@@ -192,8 +236,10 @@ namespace EngineFlames
                     {
                         ModuleEngines engine = part.Modules[m] as ModuleEngines;
                         if (engine == null || known.Contains(engine) || engine.thrustTransforms == null || engine.thrustTransforms.Count == 0) continue;
-                        known.Add(engine);
                         Kind kind = Burns(engine, part.partInfo != null ? part.partInfo.name : null);
+                        // (a jet is looked at again until the explosions mod is known to draw its afterburner: see KnowsJets)
+                        if (kind == null && engine.engineType == EngineType.Turbine && !Feed.KnowsJets) continue;
+                        known.Add(engine);
                         if (kind == null) continue;
                         int n = engine.thrustTransforms.Count;
                         for (int i = 0; i < n; i++)
@@ -243,6 +289,70 @@ namespace EngineFlames
             }
         }
 
+        /// <summary>
+        /// (Since 0.5.0.) How hard an engine's flame shows this moment, against how hard the engine is running: the game lights an
+        /// engine at full thrust at once and puts it out at once; a real one does neither (Fire.Moments switches this off).
+        ///
+        /// Starting, a liquid engine's thrust builds over a second or so: the flame grows out of the bell. A kerosene engine is lit
+        /// by a squirt of triethylaluminium and triethylborane, which burn by themselves in air with the green of the boron: the
+        /// flash at the nozzles of a Merlin or an F-1 as it starts, a quarter to half a second, before the kerosene takes over
+        /// (`tint`: the explosions mod's green fire, 10, where it has one). A solid motor's igniter fires down its whole bore at
+        /// once: the flame comes out in a burst, brighter than it burns on (`flash`).
+        /// Stopping, the propellant in the lines and the chamber burns away: a liquid engine's flame falls back into the bell in a
+        /// third of a second; a solid motor tails off over a second and a half, the last of its grain burning out unevenly, in
+        /// chuffs. Starving, an engine whose tanks are running dry (the game's own measure, how much of what it asks for it gets)
+        /// gulps gas with its propellant: the flame flickers and stutters before it goes out.
+        /// </summary>
+        float Moment(Plume p, float running, float now, out int tint, out float flash)
+        {
+            tint = -1; flash = 1f;
+            if (Fire.Moments != null && !Fire.Moments) return running;
+            Fuel fuel = p.Kind.Fuel;
+            bool solid = fuel == Fuel.Solid, jet = p.Kind == Afterburner;
+            if (running > 0.02f)
+            {
+                float since = now - p.LitAt;
+                if (since < 2f && !jet)
+                {
+                    if (solid) flash = 1f + 0.9f * Mathf.Exp(-since / 0.18f);
+                    else
+                    {
+                        // (the flame grows out of the bell over the first second)
+                        running *= Mathf.Lerp(0.25f, 1f, Mathf.SmoothStep(0f, 1f, since / 0.9f));
+                        if (fuel == Fuel.Kerosene && since < 0.45f && Feed.KnowsJets) { tint = 10; flash = 1.25f; }
+                    }
+                }
+                // (starving: the game gives it less than it asks for)
+                float met = p.Engine.propellantReqMet;
+#if DEV
+                if (testMet >= 0f) met = testMet;
+#endif
+                if (met > 0f && met < 98f && !jet)
+                {
+                    float gulp = Mathf.PerlinNoise(now * 9f, p.Id * 0.017f), stutter = Mathf.PerlinNoise(now * 23f, p.Id * 0.031f + 5f);
+                    float starve = 1f - met / 98f;
+                    running *= Mathf.Lerp(1f, 0.15f + 0.85f * gulp * stutter, Mathf.Clamp01(starve * 3f));
+                }
+                return running;
+            }
+            // (stopped: the tail of it)
+            float after = now - p.CutAt, tail = solid ? 1.5f : jet ? 0.2f : 0.35f;
+            if (p.CutAt < p.LitAt || after > tail || p.CutFrom <= 0.02f) return 0f;
+            float left = 1f - after / tail;
+            if (solid)
+            {
+                // (a solid's burnout comes in chuffs: the last of its grain burning out unevenly)
+                float chuff = 0.55f + 0.45f * Mathf.PerlinNoise(now * 7f, p.Id * 0.023f + 11f);
+                return p.CutFrom * left * left * chuff;
+            }
+            return p.CutFrom * left * left * left;
+        }
+
+#if DEV
+        static float testMet = -1f;
+        /// <summary>(Development build: every engine taken as getting so many percent of the propellant it asks for, to see it starve; "go": as it is.)</summary>
+        public static string Starve(string v) { testMet = v == "go" ? -1f : float.Parse(v, System.Globalization.CultureInfo.InvariantCulture); return testMet < 0f ? "as the game has it" : "starving at " + testMet + "%"; }
+#endif
         /// <summary>Once a frame, when the air can take it: every running nozzle says what it is putting out.</summary>
         void Asked()
         {
@@ -257,22 +367,44 @@ namespace EngineFlames
             {
                 foreach (Plume p in plumes) if (p.Hidden.Count > 0) Show(p);
                 if (Fire.On != null && !Fire.On) Report = "";
+                Dark();
                 return;
             }
-            if (Time.realtimeSinceStartup > lookAt) { Find(); lookAt = Time.realtimeSinceStartup + 1f; }
+            if (Time.realtimeSinceStartup > lookAt) { Find(); lookAt = Time.realtimeSinceStartup + 1f; Glow.Tidy(); }
             float glow = (float)Fire.Glow, longer = (float)Fire.Long, wider = (float)Fire.Wide;
+            // (vacuum engines' bells heating and cooling, running or not: see Glow)
+            if (Fire.Bells == null || Fire.Bells)
+                foreach (Plume p in plumes)
+                    if (p.Measured && p.Engine != null && p.Part != null && p.Nozzle != null) Glow.Step(p.Engine, p.Part, p.Nozzle, p.Radius, p.Rim, Engines.Running(p.Engine), Time.deltaTime);
             int burning = 0;
             foreach (Plume p in plumes)
             {
                 // (a part that has just been blown up is still on the list until the list is next gone through)
+                p.Burning = false;
                 if (p.Engine == null || p.Part == null || p.Nozzle == null) { p.Running = 0f; continue; }
                 float running = Engines.Running(p.Engine);
                 Vessel v = p.Part.vessel;
+                // (how the engine starts and stops, as the eye sees it: see Moment)
+                bool lit = running > 0.02f;
+                // (an engine already burning when the scene begins, as after a load in flight, was not just lit)
+                if (lit && p.Shown <= 0.02f && now - p.CutAt > 0.6f) p.LitAt = Time.timeSinceLevelLoad < 3f ? -100f : now;
+                if (!lit && p.Shown > 0.02f && p.CutAt < p.LitAt) { p.CutAt = now; p.CutFrom = p.Shown; }
+                float shown = Moment(p, running, now, out int tint, out float flash);
                 p.Running = running;
-                if (running <= 0.02f || v == null || v.packed)
+                p.Shown = lit ? running : 0f;
+                if (shown <= 0.02f || v == null || v.packed)
                 {
                     // (the game's own are given back a moment after it stops: the last of ours is still in the air)
                     if (p.Hidden.Count > 0 && now - p.Seen > 0.3f) Show(p);
+                    continue;
+                }
+                running = shown;
+                // (In a vacuum, where its owner has said no flames there, the game's own or Waterfall's, as without this mod: asked for by a
+                // player whose ship's flame in orbit "looks weird with some rockets", 2026-10-12. Where the air is under four thousandths of
+                // the ground's, as the explosions mod has a vacuum: some 31 km up on Kerbin.)
+                if (Fire.Vacuum != null && !Fire.Vacuum && (v.mainBody == null || !v.mainBody.atmosphere || v.atmDensity < 0.0049))
+                {
+                    if (p.Hidden.Count > 0) Show(p);
                     continue;
                 }
                 if (!p.Measured)
@@ -285,14 +417,16 @@ namespace EngineFlames
                 Kind k = p.Kind;
                 float nozzle = p.Radius * wider * k.Wide;
                 Vector3 along = p.Nozzle.forward, rim = p.Nozzle.position + along * p.Rim;
-                // (an engine throttled down has a shorter flame, and a fainter one)
-                p.Length = Engines.Flame(k.Fuel, p.Radius) * k.Long * longer * (0.3f + 0.7f * Mathf.Sqrt(running));
-                float fire = (Feed.KnowsFuels ? k.Bright : k.Was) * glow * (0.3f + 0.7f * running);
-                bool taken = Feed.Flame(p.Id, rim, along, v.srf_velocity, nozzle, p.Length, running, k.Tint, fire, v.transform);
+                // (an engine throttled down has a shorter flame, and a fainter one; an afterburner's is some seven nozzles long)
+                float full = k == Afterburner ? 14f * p.Radius : Engines.Flame(k.Fuel, p.Radius);
+                p.Length = full * k.Long * longer * (0.3f + 0.7f * Mathf.Sqrt(running));
+                float fire = (Feed.KnowsFuels ? k.Bright : k.Was) * glow * (0.3f + 0.7f * running) * flash;
+                bool taken = Feed.Flame(p.Id, rim, along, v.srf_velocity, nozzle, p.Length, running, tint >= 0 ? tint : k.Tint, fire, v.transform);
                 if (taken)
                 {
                     burning++;
                     p.Seen = now;
+                    p.Burning = true;
                     // (looked for again now and then: an effect can be made anew while the engine runs)
                     if (Fire.Hide && Time.realtimeSinceStartup > p.HidAt) { HideOthers(p); p.HidAt = Time.realtimeSinceStartup + 2f; }
                     else if (!Fire.Hide && p.Hidden.Count > 0) Show(p);
@@ -300,6 +434,7 @@ namespace EngineFlames
                 else if (p.Hidden.Count > 0 && now - p.Seen > 0.3f) Show(p);
             }
             Report = burning > 0 ? burning + " flame" + (burning == 1 ? " is" : "s are") + " burning." : plumes.Count > 0 ? "No engine is running." : "No rocket engine here.";
+            Shine();
         }
 
 #if DEV
@@ -328,12 +463,21 @@ namespace EngineFlames
             return "held where it is";
         }
         const string HoldName = "Engine Flames hold";
-        bool held;
+        bool held, aloft;
         float heldAsked;
+
+        /// <summary>(Hold, bearing the craft's weight near the ground too: for a craft hovering over the ground on its engine, as one landing does. Called again, as Hold.)</summary>
+        public static string HoldAloft()
+        {
+            GameObject was = GameObject.Find(HoldName + " aloft");
+            if (was != null) { DestroyImmediate(was); return "its weight left to it near the ground again"; }
+            new GameObject(HoldName + " aloft");
+            return "its weight borne near the ground too";
+        }
 
         void FixedUpdate()
         {
-            if (Time.realtimeSinceStartup > heldAsked) { heldAsked = Time.realtimeSinceStartup + 0.5f; held = GameObject.Find(HoldName) != null; }
+            if (Time.realtimeSinceStartup > heldAsked) { heldAsked = Time.realtimeSinceStartup + 0.5f; held = GameObject.Find(HoldName) != null; aloft = GameObject.Find(HoldName + " aloft") != null; }
             if (!held) return;
             Vessel v = FlightGlobals.ActiveVessel;
             if (v == null || v.packed || !v.loaded) return;
@@ -345,7 +489,7 @@ namespace EngineFlames
                             push -= (Vector3d)e.thrustTransforms[i].forward * (e.finalThrust * (e.thrustTransformMultipliers != null && i < e.thrustTransformMultipliers.Count ? e.thrustTransformMultipliers[i] : 1f / e.thrustTransforms.Count));
             // (near the ground its weight is left to it, so that it stays standing where it stands; in the air that is taken off it too)
             Vector3d gain = -push / Math.Max(v.totalMass, 0.01) - v.srf_velocity * 1.5;
-            if (v.heightFromTerrain > 60f || v.heightFromTerrain < 0f) gain -= FlightGlobals.getGeeForceAtPosition(v.CoMD);
+            if (aloft || v.heightFromTerrain > 60f || v.heightFromTerrain < 0f) gain -= FlightGlobals.getGeeForceAtPosition(v.CoMD);
             foreach (Part part in v.parts) if (part.rb != null) part.rb.AddForce((Vector3)gain, ForceMode.Acceleration);
         }
 
@@ -556,6 +700,19 @@ namespace EngineFlames
         }
         static int knows;
         static int Level() => VolumetricExplosions.Sources.Level;
+
+        /// <summary>(Since 0.5.0.) Whether the explosions mod installed knows a jet's afterburner and a kerosene engine's green igniter (its fires 9 and 10: Level 5, its 0.8.0).</summary>
+        public static bool KnowsJets
+        {
+            get
+            {
+                // (asked again now and then: a copy of the explosions mod swapped in, as the development build does, may be newer)
+                if (jets == 0 || (jets < 0 && Time.realtimeSinceStartup > jetsAsked)) { jetsAsked = Time.realtimeSinceStartup + 5f; try { jets = Level() >= 5 ? 1 : -1; } catch (Exception) { jets = -1; } }
+                return jets > 0;
+            }
+        }
+        static int jets;
+        static float jetsAsked;
 
         /// <summary>Whether the explosions mod installed knows a craft's re-entry glow (ExhaustKind.Plasma: 0.7.0 and later).</summary>
         public static bool KnowsPlasma

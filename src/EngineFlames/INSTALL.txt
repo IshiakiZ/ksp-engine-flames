@@ -8,8 +8,8 @@ its fire, in whose air it burns.
 
 INSTALL
   This mod needs two others, each a separate download:
-    Keystone, the base it stands on:  https://spacedock.info/mod/4665/Keystone
-    Volumetric Explosions, which makes and draws the fire:  https://spacedock.info/mod/4669/Volumetric%20Explosions
+    Keystone 0.9 or later, the base it stands on:  https://spacedock.info/mod/4665/Keystone
+    Volumetric Explosions 0.8 or later, which makes and draws the fire:  https://spacedock.info/mod/4669/Volumetric%20Explosions
   Copy their folders (Keystone and VolumetricExplosions) into your KSP's GameData folder,
   and the EngineFlames folder from this download beside them, and start the game. Without both
   the game does not load this mod. One copy of each serves every mod that uses it. To remove
@@ -26,19 +26,17 @@ BESIDE OTHER MODS
   Rocket Smoke mod does for smoke what this does for flames). Jets, ion engines and engines
   that burn something it does not know keep the flames they had.
 
-USE VOLUMETRIC EXPLOSIONS 0.6.4 OR LATER
-  With it the flame moves as fire does: its far end trails when the ship turns, and what is
-  in it streams. With an older one it works, but keeps its line like a rod.
+USE VOLUMETRIC EXPLOSIONS 0.8 OR LATER
+  This version's flames (their starts and stops, the afterburner, the glowing bells, the
+  storable fuels' clear flame) are drawn by what that version knows.
 
-RE-ENTRY FIRE (0.4.0, WITH VOLUMETRIC EXPLOSIONS 0.7.0 OR LATER)
-  A craft coming into an atmosphere fast glows: white-hot air standing off its heat shield,
-  streaming back past its sides into a wake that cools from gold through orange to
-  pink-violet, drawn as a true volume where and when the game's own flat streaks would
-  show, and those are hidden meanwhile. With an older Volumetric Explosions the game's own
-  streaks are left. Its switches are on the mod's Keystone page.
+NO RE-ENTRY FIRE IN 0.5.0
+  The re-entry fire of 0.4.0 is taken out while it is made again; until it is back, the
+  game's own re-entry streaks show as the game has them.
 
 WHERE IT WORKS
-  Made and tried on a Mac, and tried on Windows 11. The flames are drawn by Volumetric
+  Made and tried on a Mac, and tried on Windows 11 (all but 0.5.0's starts and stops, which
+  have run on the Mac only so far). The flames are drawn by Volumetric
   Explosions' shaders, packed for the game's OpenGL (a Mac, Linux) and built for Direct3D
   (Windows); nobody has run it on Linux yet. Where that mod cannot draw a volume, this one
   says so in its settings and leaves the game's flames as they are.

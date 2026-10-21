@@ -11,8 +11,8 @@ volume, not painted.
 ![A rocket climbing at 4 km over the sea, its flame and trail](src/EngineFlames/img/engine-flames-climb.gif)
 
 For Kerbal Space Program 1.12.x. **Needs two other mods**, each a separate download, and does not load without both:
-[Keystone](https://github.com/IshiakiZ/ksp-keystone) ([on SpaceDock](https://spacedock.info/mod/4665/Keystone)) and
-[Volumetric Explosions](https://github.com/IshiakiZ/ksp-volumetric-explosions) 0.6.4 or later
+[Keystone](https://github.com/IshiakiZ/ksp-keystone) 0.9 or later ([on SpaceDock](https://spacedock.info/mod/4665/Keystone)) and
+[Volumetric Explosions](https://github.com/IshiakiZ/ksp-volumetric-explosions) 0.8 or later
 ([on SpaceDock](https://spacedock.info/mod/4669/Volumetric%20Explosions)), in whose air the flame burns.
 
 ## What it does
@@ -24,10 +24,7 @@ For Kerbal Space Program 1.12.x. **Needs two other mods**, each a separate downl
 * **It moves as fire does:** it wavers, trails when the ship turns, and is turned by the pad, the ground or another
   craft.
 * With or without Waterfall: the game's or Waterfall's flame is hidden while this one burns.
-* **Re-entry fire** (with Volumetric Explosions 0.7.0): white-hot air standing off a craft's heat shield, streaming
-  back past its sides into a wake cooling from gold to pink-violet, where the game's flat streaks would be.
-
-![A capsule coming into the air at 2 km/s, wrapped in its own fire](src/EngineFlames/img/engine-flames-reentry.gif)
+* **Starts and stops as real engines do** (0.5.0): the flame builds as an engine lights (a kerosene engine with its igniter's green flash, a solid motor in a burst), falls back as it stops, flickers as the tanks run dry; a jet's afterburner as a thin flame with a row of shock diamonds; a vacuum engine's bell glowing red-orange through a long burn.
 
 ## Install
 
@@ -37,23 +34,25 @@ Copy the `EngineFlames` folder from the download into your KSP's `GameData`, bes
 ## Settings
 
 In the Keystone window (the keystone button on the game's toolbar, or Alt-K; Option-K on a Mac): how bright, long
-and wide the flame is, the re-entry fire, and whether the game's own flames and streaks are hidden.
+and wide the flame is, whether it lights what is round it and burns in a vacuum, and whether the game's own flames are
+hidden.
 
 ## Good to know
 
-* Rocket engines only. Jets, ion engines and engines that burn something it does not know keep the flames they had.
-  [Flames for other mods' engines](docs/Other-engines.md).
+* Rocket engines and jets' afterburners. Dry jets, ion engines and engines that burn something it does not know keep the flames they had.
+  [Flames for other mods' engines](https://github.com/IshiakiZ/ksp-engine-flames/wiki/Other-engines).
 * It lights the smoke of [Rocket Smoke](https://github.com/IshiakiZ/ksp-rocket-smoke); the light on ship and ground is
   [Natural Light](https://github.com/IshiakiZ/ksp-natural-light)'s.
 * The flame costs less than the flames it hides, where it was measured.
+* **No re-entry fire in 0.5.0:** 0.4.0's is taken out while it is made again; until it is back, the game's own re-entry
+  streaks show.
 
 ## Works on
 
-Mac: tried. Windows 11 (Direct3D 11 and OpenGL): tried before the flame's rework and the re-entry fire. Linux: never
-run.
+Mac: tried. Windows 11: tried on Direct3D 11, all but 0.5.0's starts and stops (the Mac only so far). Linux: never run.
 
-**More:** [the long description](docs/The-long-description.md) (everything in full, and what
-was tried on each system) and the rest of the [wiki](docs/README.md).
+**More:** [the long description](https://github.com/IshiakiZ/ksp-engine-flames/wiki/The-long-description) (everything in full, and what
+was tried on each system) and the rest of the [wiki](https://github.com/IshiakiZ/ksp-engine-flames/wiki).
 
 ## Licence
 

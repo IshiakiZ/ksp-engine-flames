@@ -1,3 +1,7 @@
+// The re-entry fire is in the development build only since 0.5.0, kept for the work on it (the owner, 2026-10-21: "Reentry fire:
+// we're going to need to work on it a lot, so don't get rid of it, but save it for later. Don't release it"). A release build
+// has none of it: no switch on the page, nothing drawn, and the game's own re-entry streaks as the game has them.
+#if DEV
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -176,7 +180,7 @@ namespace EngineFlames
                     c.Seen = now;
                     glowing++;
                     if (v == FlightGlobals.ActiveVessel) drawnForActive = true;
-                    Lamp(c, face, along, strength, glow);
+                    Lamp(c, face, along, strength, glow, v.rootPart != null ? v.rootPart.transform.Find("model") : null);
                 }
             }
             // (each craft's light fades out once its glow is gone, and is let go when the craft is)
@@ -196,7 +200,7 @@ namespace EngineFlames
         }
 
         /// <summary>The glow's own light on the craft: from just ahead of the face, the colour of the glow at its strength (pink-violet faint, orange and gold strong).</summary>
-        void Lamp(Craft c, Vector3 face, Vector3 along, float strength, float glow)
+        void Lamp(Craft c, Vector3 face, Vector3 along, float strength, float glow, Transform ride)
         {
             if (c.Lamp == null)
             {
@@ -209,6 +213,10 @@ namespace EngineFlames
                 c.Lamp.cullingMask = (1 << 0) | (1 << 15);
             }
             c.Lamp.enabled = true;
+            // (hung from the craft's model, so that it goes wherever the craft is drawn: the Smooth Running mod carries the models on
+            // between the game's physics steps, and a light left loose would stand behind the craft by up to a step, forty metres at
+            // the speed of a craft coming in from orbit)
+            if (ride != null && c.Lamp.transform.parent != ride) c.Lamp.transform.SetParent(ride, true);
             c.Lamp.transform.position = face - along * (0.4f * c.Radius);
             c.Lamp.range = 3f * c.Radius + 1.5f * c.Length + 6f;
             c.Lamp.color = Color.Lerp(new Color(0.85f, 0.45f, 0.75f), new Color(1f, 0.62f, 0.32f), Mathf.Clamp01(strength * 2f));
@@ -231,3 +239,4 @@ namespace EngineFlames
         }
     }
 }
+#endif
