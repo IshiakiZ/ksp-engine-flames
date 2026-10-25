@@ -41,12 +41,29 @@ namespace EngineFlames
     /// </summary>
     static class Fire
     {
-        public const string Version = "0.5.0";
+        public const string Version = "0.6.0";
 
         public static Mod Page;
-        public static Toggle On, Hide, Reentry, ReentryHideStock, Lighting, Vacuum, Moments, Bells;
+        public static Toggle On, Hide, Reentry, ReentryHideStock, Lighting, Vacuum, Moments, Bells, Rcs;
         public static Slider Glow, Long, Wide, ReentryGlow;
         public static string Why = "";
+
+        /// <summary>
+        /// Whether there is a flight: the game's FlightGlobals.ready, and also the frame or so it has that false while it gives the
+        /// controls to another craft near by (a switch, a docking), the new craft already in place. Taken at its word, every switch
+        /// put the game's own RCS puffs back for a frame and had every jet looked for again (found with the other mods' flash at a
+        /// switch, 2026-10-25).
+        /// </summary>
+        public static bool FlightReady
+        {
+            get
+            {
+                if (FlightGlobals.ready) { readyFrame = Time.frameCount; return true; }
+                Vessel v = FlightGlobals.ActiveVessel;
+                return HighLogic.LoadedSceneIsFlight && Time.frameCount - readyFrame <= 5 && v != null && v.loaded && v.mainBody != null;
+            }
+        }
+        static int readyFrame = -100;
 
         public static void Setup()
         {
@@ -60,6 +77,7 @@ namespace EngineFlames
             Vacuum = Page.Toggle("vacuum", "Flames in a vacuum", true, "Off: where there is next to no air (high above the ground, or on a world with none), no flame of this mod's is drawn, and the game's own (or Waterfall's) is left as it is.");
             Moments = Page.Toggle("moments", "Engines start and stop as real ones do", true, "A flame builds over a second as an engine starts (a kerosene engine with the green flash of its igniter, a solid motor in a burst), falls back as it stops (a solid motor tails off in chuffs), and flickers as the tanks run dry. Off: the flame comes and goes at once, as the game's does.");
             Bells = Page.Toggle("bells", "Vacuum engines' bells glow with heat", true, "An engine made for vacuum has a long nozzle that nothing cools but its own light: through a long burn it heats until it glows dull red, then orange, and after the burn it cools within seconds, as the bells of real upper stages do.");
+            Rcs = Page.Toggle("rcs", "RCS puffs", true, "RCS thrusters' jets as they look, gas catching the sun: bright cones seen towards the sun, with a flash as each pulse begins; faint wisps side on; nothing in a planet's shadow. A faint salmon glow at a Vernor's nozzle; a short whitish puff in air. In place of the game's white jets and Waterfall's plumes (hidden on those parts while this is on, with \"Hide the game's own flames\").");
             Lighting = Page.Toggle("light", "Flames light what is round them", true, "A running engine's flame lights the craft and the ground it strikes, more strongly as the daylight goes. Where Natural Light or the Engine Lighting mod is installed, they light it instead.");
 #if DEV
             // (the re-entry fire's, in the development build only since 0.5.0: see Reentry)
