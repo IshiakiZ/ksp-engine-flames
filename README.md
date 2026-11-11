@@ -11,7 +11,7 @@ volume, not painted.
 ![A rocket climbing at 4 km over the sea, its flame and trail](src/EngineFlames/img/engine-flames-climb.gif)
 
 For Kerbal Space Program 1.12.x. **Needs two other mods**, each a separate download, and does not load without both:
-[Keystone](https://github.com/IshiakiZ/ksp-keystone) 0.9 or later ([on SpaceDock](https://spacedock.info/mod/4665/Keystone)) and
+[Keystone](https://github.com/IshiakiZ/ksp-keystone) 0.11 or later ([on SpaceDock](https://spacedock.info/mod/4665/Keystone)) and
 [Volumetric Explosions](https://github.com/IshiakiZ/ksp-volumetric-explosions) 0.8 or later
 ([on SpaceDock](https://spacedock.info/mod/4669/Volumetric%20Explosions)), in whose air the flame burns.
 
