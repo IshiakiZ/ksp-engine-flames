@@ -84,7 +84,14 @@ namespace EngineFlames
 
         static void Unhide(Thrusters t)
         {
-            foreach (Renderer r in t.Hidden) if (r != null) r.forceRenderingOff = false;
+            // (what the game made of its own puffs while they were hidden is let go, not shown all at once: see Flames.Show)
+            foreach (Renderer r in t.Hidden)
+            {
+                if (r == null) continue;
+                ParticleSystem system = r.GetComponent<ParticleSystem>();
+                if (system != null) system.Clear(false);
+                r.forceRenderingOff = false;
+            }
             t.Hidden.Clear();
         }
 

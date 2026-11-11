@@ -39,7 +39,10 @@ Copy the `EngineFlames` folder from the download into your KSP's `GameData`, bes
 
 In the Keystone window (the keystone button on the game's toolbar, or Alt-K; Option-K on a Mac): how bright, long
 and wide the flame is, whether it lights what is round it and burns in a vacuum, RCS puffs, and whether the game's own
-flames are hidden.
+flames are hidden. With Keystone 0.11.0, seven finer details in its Advanced view (0.7.0): a flame's length at the least
+throttle, how unevenly its gas comes out and how far the jet wavers, how long engines take to start and stop, the
+igniter's green flash, how fast bells heat and cool, and how strongly the flames light what is round them.
+[All of them](https://github.com/IshiakiZ/ksp-engine-flames/wiki/The-long-description#settings).
 
 ## Good to know
 

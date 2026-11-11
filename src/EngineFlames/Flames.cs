@@ -5,7 +5,7 @@ using UnityEngine;
 
 #if !DEV
 [assembly: KSPAssembly("EngineFlames", 0, 4)]
-[assembly: KSPAssemblyDependency("Keystone", 0, 5)]
+[assembly: KSPAssemblyDependency("Keystone", 0, 11)]
 #endif
 
 namespace EngineFlames
@@ -41,12 +41,25 @@ namespace EngineFlames
     /// </summary>
     static class Fire
     {
-        public const string Version = "0.6.0";
+        public const string Version = "0.7.0";
 
         public static Mod Page;
         public static Toggle On, Hide, Reentry, ReentryHideStock, Lighting, Vacuum, Moments, Bells, Rcs;
         public static Slider Glow, Long, Wide, ReentryGlow;
+        // (the fine details, on the page in Keystone's Advanced view; each as installed does what the mod did before them)
+        public static Slider Takes, Least, LightBy, BellHeat, Uneven, Wavers;
+        public static Toggle Igniter;
         public static string Why = "";
+
+        /// <summary>A fine detail's value: as installed before the page is made.</summary>
+        public static float Of(Slider slider, float installed) => slider != null ? (float)slider : installed;
+        public static bool Shown(Toggle toggle) => toggle == null || (bool)toggle;
+
+        /// <summary>The settings added after Fine(true) are fine details: on the page only in Keystone's Advanced view, until Fine(false).
+        /// (Keystone 0.11.0 has the two views; an older one has neither call, and shows the fine details with the rest.)</summary>
+        static void Fine(bool fine) { try { if (fine) Advanced(Page); else Simple(Page); } catch (Exception) { } }
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)] static void Advanced(Mod page) => page.Advanced();
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)] static void Simple(Mod page) => page.Simple();
 
         /// <summary>
         /// Whether there is a flight: the game's FlightGlobals.ready, and also the frame or so it has that false while it gives the
@@ -73,12 +86,27 @@ namespace EngineFlames
             Glow = Page.Slider("glow", "How bright", 1f, 0.2f, 3f, "", 2, "How bright the flames are.");
             Long = Page.Slider("long", "How long", 1f, 0.4f, 2.5f, "", 2, "How long the flames are.");
             Wide = Page.Slider("wide", "How wide", 1f, 0.5f, 2f, "", 2, "How wide the flames are. A nozzle's width is measured from the engine's model (or, where that cannot be done, worked out from its thrust); this corrects it.");
+            Fine(true);
+            Least = Page.Slider("least", "Flame at the least throttle", 0.3f, 0.1f, 1f, "", 2, "How long a flame is with its engine throttled right down, against its length at full throttle: 1, as long whatever the throttle.");
+            Uneven = Page.Slider("uneven", "How unevenly the gas comes out", 1f, 0f, 3f, "", 2, "How unevenly a flame's gas leaves the nozzle, in pulses and lumps: 0 perfectly even.");
+            Wavers = Page.Slider("wavers", "How far the jet wavers", 0.05f, 0f, 0.2f, "", 3, "How far aside the whole jet wavers, against how far it goes on.");
+            Fine(false);
             Hide = Page.Toggle("hide", "Hide the game's own flames", true, "While a flame of this mod's is drawn for an engine, the flames the game or Waterfall draws for it are hidden. Smoke is left.");
             Vacuum = Page.Toggle("vacuum", "Flames in a vacuum", true, "Off: where there is next to no air (high above the ground, or on a world with none), no flame of this mod's is drawn, and the game's own (or Waterfall's) is left as it is.");
             Moments = Page.Toggle("moments", "Engines start and stop as real ones do", true, "A flame builds over a second as an engine starts (a kerosene engine with the green flash of its igniter, a solid motor in a burst), falls back as it stops (a solid motor tails off in chuffs), and flickers as the tanks run dry. Off: the flame comes and goes at once, as the game's does.");
+            Fine(true);
+            Takes = Page.Slider("takes", "How long they take to start and stop", 1f, 0.25f, 3f, "x", 2, "How long a flame takes to build as its engine lights (about a second, as installed) and to tail off as it stops.");
+            Igniter = Page.Toggle("igniter", "A kerosene engine's green igniter flash", true, "As a kerosene engine lights, its igniter's green flash for the first half second (with Volumetric Explosions 0.8.0 or later).");
+            Fine(false);
             Bells = Page.Toggle("bells", "Vacuum engines' bells glow with heat", true, "An engine made for vacuum has a long nozzle that nothing cools but its own light: through a long burn it heats until it glows dull red, then orange, and after the burn it cools within seconds, as the bells of real upper stages do.");
+            Fine(true);
+            BellHeat = Page.Slider("bellheat", "How fast the bells heat and cool", 1f, 0.25f, 4f, "x", 2, "How quickly a vacuum engine's bell comes to its glow through a burn, and cools after it.");
+            Fine(false);
             Rcs = Page.Toggle("rcs", "RCS puffs", true, "RCS thrusters' jets as they look, gas catching the sun: bright cones seen towards the sun, with a flash as each pulse begins; faint wisps side on; nothing in a planet's shadow. A faint salmon glow at a Vernor's nozzle; a short whitish puff in air. In place of the game's white jets and Waterfall's plumes (hidden on those parts while this is on, with \"Hide the game's own flames\").");
             Lighting = Page.Toggle("light", "Flames light what is round them", true, "A running engine's flame lights the craft and the ground it strikes, more strongly as the daylight goes. Where Natural Light or the Engine Lighting mod is installed, they light it instead.");
+            Fine(true);
+            LightBy = Page.Slider("lightby", "How strongly", 1f, 0.2f, 3f, "x", 2, "How strongly a flame lights the craft and the ground (this mod's own light: not Natural Light's or Engine Lighting's).");
+            Fine(false);
 #if DEV
             // (the re-entry fire's, in the development build only since 0.5.0: see Reentry)
             Reentry = Page.Toggle("reentry", "Re-entry fire", true, "Coming into an atmosphere fast, a craft glows: a white-hot layer of air standing off the face that meets it, streaming back past its sides into a wake that cools from gold through orange to pink-violet. Drawn as a true volume where the game's own fire would be. Off: the game's own streaks.");
@@ -185,6 +213,8 @@ namespace EngineFlames
         readonly HashSet<ModuleEngines> known = new HashSet<ModuleEngines>();
         float lookAt;
         bool hooked;
+        static bool jetsFailed, jetsMine;          // (failed: an explosions mod older than 0.6.4, with no such settings)
+        static float jetsUneven = 1f, jetsWavers = 0.05f, jetsAt;
         public static string Report = "";
 
         // (in a method of its own: a Keystone from before 2026-10-18 has no such thing, and it is the method that names it that fails)
@@ -237,7 +267,16 @@ namespace EngineFlames
 
         static void Show(Plume p)
         {
-            foreach (Renderer r in p.Hidden) if (r != null) r.forceRenderingOff = false;
+            // (the game's own flames, sparks and shock went on being made while hidden: hiding draws nothing but stops nothing. What is
+            // alive of them is let go, so that they do not all appear at once as they are given back; what the game makes from now
+            // on is drawn. As Rocket Smoke does with the game's smoke: the owner's report of 2026-11-07)
+            foreach (Renderer r in p.Hidden)
+            {
+                if (r == null) continue;
+                ParticleSystem system = r.GetComponent<ParticleSystem>();
+                if (system != null) system.Clear(false);
+                r.forceRenderingOff = false;
+            }
             p.Hidden.Clear();
             p.HidAt = 0f;
         }
@@ -329,7 +368,7 @@ namespace EngineFlames
             bool solid = fuel == Fuel.Solid, jet = p.Kind == Afterburner;
             if (running > 0.02f)
             {
-                float since = now - p.LitAt;
+                float since = (now - p.LitAt) / Fire.Of(Fire.Takes, 1f);
                 if (since < 2f && !jet)
                 {
                     if (solid) flash = 1f + 0.9f * Mathf.Exp(-since / 0.18f);
@@ -337,7 +376,7 @@ namespace EngineFlames
                     {
                         // (the flame grows out of the bell over the first second)
                         running *= Mathf.Lerp(0.25f, 1f, Mathf.SmoothStep(0f, 1f, since / 0.9f));
-                        if (fuel == Fuel.Kerosene && since < 0.45f && Feed.KnowsJets) { tint = 10; flash = 1.25f; }
+                        if (fuel == Fuel.Kerosene && since < 0.45f && Feed.KnowsJets && Fire.Shown(Fire.Igniter)) { tint = 10; flash = 1.25f; }
                     }
                 }
                 // (starving: the game gives it less than it asks for)
@@ -354,7 +393,7 @@ namespace EngineFlames
                 return running;
             }
             // (stopped: the tail of it)
-            float after = now - p.CutAt, tail = solid ? 1.5f : jet ? 0.2f : 0.35f;
+            float after = now - p.CutAt, tail = (solid ? 1.5f : jet ? 0.2f : 0.35f) * Fire.Of(Fire.Takes, 1f);
             if (p.CutAt < p.LitAt || after > tail || p.CutFrom <= 0.02f) return 0f;
             float left = 1f - after / tail;
             if (solid)
@@ -390,10 +429,19 @@ namespace EngineFlames
             }
             if (Time.realtimeSinceStartup > lookAt) { Find(); lookAt = Time.realtimeSinceStartup + 1f; Glow.Tidy(); }
             float glow = (float)Fire.Glow, longer = (float)Fire.Long, wider = (float)Fire.Wide;
+            // (the jets' look is the explosions mod's: given to it while either is not as installed, and once more when both are put
+            // back, again every two seconds for a copy of it swapped in; as installed its own stand, which its development build can try)
+            float uneven = Fire.Of(Fire.Uneven, 1f), wavers = Fire.Of(Fire.Wavers, 0.05f);
+            bool mine = Mathf.Abs(uneven - 1f) > 1e-4f || Mathf.Abs(wavers - 0.05f) > 1e-5f;
+            if (!jetsFailed && (mine || jetsMine) && (uneven != jetsUneven || wavers != jetsWavers || Time.realtimeSinceStartup > jetsAt))
+            {
+                try { Feed.Jets(uneven, wavers); } catch (Exception) { jetsFailed = true; }
+                jetsUneven = uneven; jetsWavers = wavers; jetsAt = Time.realtimeSinceStartup + 2f; jetsMine = mine;
+            }
             // (vacuum engines' bells heating and cooling, running or not: see Glow)
             if (Fire.Bells == null || Fire.Bells)
                 foreach (Plume p in plumes)
-                    if (p.Measured && p.Engine != null && p.Part != null && p.Nozzle != null) Glow.Step(p.Engine, p.Part, p.Nozzle, p.Radius, p.Rim, Engines.Running(p.Engine), Time.deltaTime);
+                    if (p.Measured && p.Engine != null && p.Part != null && p.Nozzle != null) Glow.Step(p.Engine, p.Part, p.Nozzle, p.Radius, p.Rim, Engines.Running(p.Engine), Time.deltaTime * Fire.Of(Fire.BellHeat, 1f));
             int burning = 0;
             foreach (Plume p in plumes)
             {
@@ -437,7 +485,8 @@ namespace EngineFlames
                 Vector3 along = p.Nozzle.forward, rim = p.Nozzle.position + along * p.Rim;
                 // (an engine throttled down has a shorter flame, and a fainter one; an afterburner's is some seven nozzles long)
                 float full = k == Afterburner ? 14f * p.Radius : Engines.Flame(k.Fuel, p.Radius);
-                p.Length = full * k.Long * longer * (0.3f + 0.7f * Mathf.Sqrt(running));
+                float least = Fire.Of(Fire.Least, 0.3f);
+                p.Length = full * k.Long * longer * (least + (1f - least) * Mathf.Sqrt(running));
                 float fire = (Feed.KnowsFuels ? k.Bright : k.Was) * glow * (0.3f + 0.7f * running) * flash;
                 bool taken = Feed.Flame(p.Id, rim, along, v.srf_velocity, nozzle, p.Length, running, tint >= 0 ? tint : k.Tint, fire, v.transform);
                 if (taken)
@@ -703,6 +752,11 @@ namespace EngineFlames
     /// </summary>
     static class Feed
     {
+        /// <summary>(Since 0.7.0.) How unevenly an engine's gas leaves its nozzle, and how far the jet wavers, as the explosions mod draws
+        /// every flame (its Settings.JetUneven and JetWavers, 0.6.4 and later): set every frame, as a copy of it swapped in starts afresh.</summary>
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+        public static void Jets(float uneven, float wavers) { VolumetricExplosions.Settings.JetUneven = uneven; VolumetricExplosions.Settings.JetWavers = wavers; }
+
         public static void Hook(Action asked) { VolumetricExplosions.Sources.Asked += asked; }
         public static void Unhook(Action asked) { VolumetricExplosions.Sources.Asked -= asked; }
         public static bool Ready() => VolumetricExplosions.Sources.Ready;

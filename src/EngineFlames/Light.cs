@@ -55,7 +55,7 @@ namespace EngineFlames
                 g.Power += power;
             }
             groups.Sort((a, b) => b.Power.CompareTo(a.Power));
-            float glow = (float)Fire.Glow, time = Time.time;
+            float glow = (float)Fire.Glow * Fire.Of(Fire.LightBy, 1f), time = Time.time;
             for (int n = 0; n < Lights.Most; n++)
             {
                 if (n >= groups.Count) { Lights.Off(2 * n); Lights.Off(2 * n + 1); continue; }
@@ -135,6 +135,12 @@ namespace EngineFlames
                     l = lamps[k] = holder.AddComponent<Light>();
                     l.type = LightType.Point;
                     l.shadows = LightShadows.None;
+                    // (everything but the insides of cockpits and the crew in them, the game's layers 16 and 20, as the explosions' fires
+                    // since 2026-10-27: those are drawn in a space of their own, not always where the craft is (up to 400 m off it in a
+                    // climb), and a lamp here casts no shadow, so a flame lit the crew through the walls or wherever their cabin was
+                    // drawn: their faces in their portraits lit from one side through a launch, seen 2026-10-27. Through 0.6.0 it lit
+                    // them as it lit everything)
+                    l.cullingMask = ~((1 << 16) | (1 << 20));
                 }
                 l.renderMode = costly ? LightRenderMode.ForcePixel : LightRenderMode.Auto;
                 l.transform.position = at;
