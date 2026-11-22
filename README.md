@@ -21,6 +21,9 @@ For Kerbal Space Program 1.12.x. **Needs two other mods**, each a separate downl
 * **What burns shows:** kerosene and solid fuel blinding, hydrogen a pale veil with shock diamonds in it, a nuclear
   engine a faint red.
 * **The air shapes it:** a narrow column at the pad, wider as the air thins, a clear lobe in a vacuum.
+* **A cluster burns as one** (0.8.0): engines side by side, burning the same fuel and pointing the same way, run their
+  jets together into one flame as long as one jet as wide as all their mouths, as a Falcon 9's nine do at lift-off;
+  boosters set further apart keep flames of their own.
 * **It moves as fire does:** it wavers, trails when the ship turns, and is turned by the pad, the ground or another
   craft.
 * With or without Waterfall: the game's or Waterfall's flame is hidden while this one burns.

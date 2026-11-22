@@ -41,10 +41,10 @@ namespace EngineFlames
     /// </summary>
     static class Fire
     {
-        public const string Version = "0.7.0";
+        public const string Version = "0.8.0";
 
         public static Mod Page;
-        public static Toggle On, Hide, Reentry, ReentryHideStock, Lighting, Vacuum, Moments, Bells, Rcs;
+        public static Toggle On, Hide, Reentry, ReentryHideStock, ReentryFar, Lighting, Vacuum, Moments, Bells, Rcs;
         public static Slider Glow, Long, Wide, ReentryGlow;
         // (the fine details, on the page in Keystone's Advanced view; each as installed does what the mod did before them)
         public static Slider Takes, Least, LightBy, BellHeat, Uneven, Wavers;
@@ -112,6 +112,7 @@ namespace EngineFlames
             Reentry = Page.Toggle("reentry", "Re-entry fire", true, "Coming into an atmosphere fast, a craft glows: a white-hot layer of air standing off the face that meets it, streaming back past its sides into a wake that cools from gold through orange to pink-violet. Drawn as a true volume where the game's own fire would be. Off: the game's own streaks.");
             ReentryGlow = Page.Slider("reentryGlow", "How bright the re-entry fire is", 1f, 0.2f, 3f, "", 2, "How bright the re-entry fire and its light are.");
             ReentryHideStock = Page.Toggle("reentryHide", "Hide the game's own re-entry streaks", true, "While this mod's re-entry fire burns for the craft being flown, the game's flat streaks and their light are kept off (its sound and shaking are left).");
+            ReentryFar = Page.Toggle("reentryFar", "The re-entry fire seen from far off", true, "Seen from hundreds of metres or kilometres off, where the glow itself is a few pixels across or less, it is drawn as a real one is photographed from afar: a bright head, blooming as bright lights do in a camera, on a thin glowing trail behind it.");
 #endif
         }
 
@@ -203,6 +204,8 @@ namespace EngineFlames
             public Kind Kind;
             public int Id;
             public float Guess, Radius, Rim, Share, Length, Running, Seen = -100f, HidAt;
+            // (since 2026-11-20: the radius of the one jet that this nozzle's runs together with its neighbours' into, metres; its own where alone. See Merge)
+            public float Together;
             public bool Measured, Burning;
             // (since 0.5.0: when it last lit, when it last stopped and how hard it was burning then; see Moment)
             public float LitAt = -100f, CutAt = -100f, CutFrom, Shown;
@@ -210,6 +213,62 @@ namespace EngineFlames
         }
 
         readonly List<Plume> plumes = new List<Plume>();
+
+        /// <summary>
+        /// (Since 2026-11-20.) Which nozzles' jets run together into one, and how wide that one is (Plume.Together): engines side by
+        /// side on one craft, burning the same fuel and firing the same way, whose jets meet within the first few of their own
+        /// widths. A jet's flame is some twenty-two of its mouth's widths long (Keystone's Engines.Flame), and the jets of a
+        /// cluster, once met, burn on as one jet as wide as all their mouths together, whose flame is that much longer: a
+        /// Falcon 9's nine engines' flame at lift-off reaches twelve and more of the rocket's widths below it (NASA's film of
+        /// Demo-2's launch, its isolated views), where one of its engines alone would reach five or six. Drawn as long as each
+        /// one's own, as until then, the Kerbal X's Mainsail made a flame 49 m long and its five Swivels torches of 14 m round
+        /// it: a big rocket's fire was a cluster of short torches. Now all six are 58 m, the length of one jet 1.32 m wide.
+        /// Development build: Alone("1") as until then.
+        /// </summary>
+        void Merge()
+        {
+            int n = plumes.Count;
+            if (joined == null || joined.Length < n) { joined = new int[n + 16]; joinedArea = new float[n + 16]; }
+            for (int i = 0; i < n; i++) { joined[i] = i; joinedArea[i] = 0f; }
+            for (int i = 0; i < n; i++)
+            {
+                Plume a = plumes[i];
+                if (!Joins(a) || alone) continue;
+                Vector3 wayA = a.Nozzle.forward, mouthA = a.Nozzle.position + wayA * a.Rim;
+                for (int j = i + 1; j < n; j++)
+                {
+                    Plume b = plumes[j];
+                    if (!Joins(b) || b.Kind != a.Kind || b.Part.vessel != a.Part.vessel) continue;
+                    Vector3 wayB = b.Nozzle.forward;
+                    if (Vector3.Dot(wayA, wayB) < 0.966f) continue;                   // (within fifteen degrees of one way)
+                    // (Close enough that they meet early in the flame: a jet in thick air widens by about a fifth of a metre for each metre
+                    // it goes, so jets whose mouths' edges are a width of either apart meet some five widths down, near the nozzles against a
+                    // flame twenty-two widths long. Further apart, they are flames side by side, as two boosters' on either side of a wide
+                    // core are.)
+                    Vector3 apart = b.Nozzle.position + wayB * b.Rim - mouthA;
+                    float on = Vector3.Dot(apart, wayA), both = a.Radius + b.Radius;
+                    if ((apart - wayA * on).sqrMagnitude > 6.25f * both * both || Mathf.Abs(on) > 3f * both) continue;
+                    int ra = Root(i), rb = Root(j);
+                    if (ra != rb) joined[rb] = ra;
+                }
+            }
+            for (int i = 0; i < n; i++) if (Joins(plumes[i])) joinedArea[Root(i)] += plumes[i].Radius * plumes[i].Radius;
+            for (int i = 0; i < n; i++)
+            {
+                Plume p = plumes[i];
+                p.Together = Joins(p) ? Mathf.Sqrt(Mathf.Max(joinedArea[Root(i)], p.Radius * p.Radius)) : p.Radius;
+            }
+        }
+        int[] joined;
+        float[] joinedArea;
+        static bool alone;
+        int Root(int i) { while (joined[i] != i) { joined[i] = joined[joined[i]]; i = joined[i]; } return i; }
+        /// <summary>(Merge) A nozzle burning, measured, and on a craft: one whose jet can run together with others.</summary>
+        static bool Joins(Plume p) => p.Measured && p.Shown > 0.02f && p.Engine != null && p.Part != null && p.Nozzle != null && p.Part.vessel != null;
+#if DEV
+        /// <summary>(Development build: "1", every nozzle's flame as long as its own alone, as until 2026-11-20; "0", the jets of a cluster run together, see Merge.)</summary>
+        public static string Alone(string v) { alone = v == "1"; return alone ? "each flame as long as its own" : "a cluster's jets run together"; }
+#endif
         readonly HashSet<ModuleEngines> known = new HashSet<ModuleEngines>();
         float lookAt;
         bool hooked;
@@ -443,6 +502,7 @@ namespace EngineFlames
                 foreach (Plume p in plumes)
                     if (p.Measured && p.Engine != null && p.Part != null && p.Nozzle != null) Glow.Step(p.Engine, p.Part, p.Nozzle, p.Radius, p.Rim, Engines.Running(p.Engine), Time.deltaTime * Fire.Of(Fire.BellHeat, 1f));
             int burning = 0;
+            Merge();
             foreach (Plume p in plumes)
             {
                 // (a part that has just been blown up is still on the list until the list is next gone through)
@@ -484,7 +544,7 @@ namespace EngineFlames
                 float nozzle = p.Radius * wider * k.Wide;
                 Vector3 along = p.Nozzle.forward, rim = p.Nozzle.position + along * p.Rim;
                 // (an engine throttled down has a shorter flame, and a fainter one; an afterburner's is some seven nozzles long)
-                float full = k == Afterburner ? 14f * p.Radius : Engines.Flame(k.Fuel, p.Radius);
+                float full = k == Afterburner ? 14f * p.Radius : Engines.Flame(k.Fuel, p.Together > p.Radius ? p.Together : p.Radius);
                 float least = Fire.Of(Fire.Least, 0.3f);
                 p.Length = full * k.Long * longer * (least + (1f - least) * Mathf.Sqrt(running));
                 float fire = (Feed.KnowsFuels ? k.Bright : k.Was) * glow * (0.3f + 0.7f * running) * flash;
@@ -513,7 +573,7 @@ namespace EngineFlames
             var say = new System.Text.StringBuilder(Report + " " + Fire.Why);
             foreach (Plume p in it.plumes)
                 say.Append("\n").Append(p.Part.partInfo != null ? p.Part.partInfo.name : p.Part.name).Append(": ").Append(p.Kind.Name).Append(", nozzle ").Append(p.Radius.ToString("F2")).Append(" m (guessed ").Append(p.Guess.ToString("F2"))
-                   .Append("), rim ").Append(p.Rim.ToString("F2")).Append(" m on, running ").Append(p.Running.ToString("F2")).Append(", flame ").Append(p.Length.ToString("F1")).Append(" m, hides ").Append(p.Hidden.Count);
+                   .Append("), rim ").Append(p.Rim.ToString("F2")).Append(" m on, running ").Append(p.Running.ToString("F2")).Append(", flame ").Append(p.Length.ToString("F1")).Append(" m (its jet with others' ").Append(p.Together.ToString("F2")).Append(" m wide), hides ").Append(p.Hidden.Count);
             return say.ToString();
         }
 
@@ -797,12 +857,12 @@ namespace EngineFlames
         }
         static int plasma;
 
-        /// <summary>A craft's re-entry glow (see Reentry): its face, the way the air goes past, how wide it is across the air, how far behind the face the flow closes in behind it (its neck), how far its wake glows.</summary>
-        public static bool Plasma(int id, Vector3 face, Vector3 along, Vector3d going, float radius, float neck, float length, float running, float fire, Transform ship)
+        /// <summary>A craft's re-entry glow (see Reentry): its face, the way the air goes past, how wide it is across the air, how far behind the face the flow closes in behind it (its neck), how far its wake glows, and how strong the heating is (0 to 1: the explosions mod colours it by that since 2026-11-20, in Exhaust.warm, which a glow has no other use for).</summary>
+        public static bool Plasma(int id, Vector3 face, Vector3 along, Vector3d going, float radius, float neck, float length, float running, float fire, float strength, Transform ship)
         {
             var exhaust = new VolumetricExplosions.Exhaust
             {
-                id = id, rim = (Vector3d)face, along = (Vector3d)along, going = going, nozzle = radius, flame = length, running = running, reach = neck,
+                id = id, rim = (Vector3d)face, along = (Vector3d)along, going = going, nozzle = radius, flame = length, running = running, reach = neck, warm = Mathf.Clamp01(strength),
                 // (the explosions mod's own number for this kind of fire, Site.PlasmaKind, and for this kind of source)
                 tint = 8, fire = fire, rides = ship, kind = VolumetricExplosions.ExhaustKind.Plasma,
             };
